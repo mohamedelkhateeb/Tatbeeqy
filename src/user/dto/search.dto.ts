@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class SearchDto {
+export class SearchInput {
   @IsOptional()
   @IsString()
   search?: string;

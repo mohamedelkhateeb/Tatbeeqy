@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty, IsEmail, IsOptional } from 'class-validator';
 
-export class AdminDto {
+export class FacebookInput {
   @IsString()
   @IsNotEmpty()
   name: string;

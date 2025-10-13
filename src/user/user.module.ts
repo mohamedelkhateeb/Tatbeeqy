@@ -10,7 +10,7 @@ import { Session } from './model/session.entity'
 
 //Service and Resolver
 import { UserService } from './user.service'
-import { UserResolver } from './user.controller'
+import { UserController } from './user.controller'
 
 @Module({
   imports: [

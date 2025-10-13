@@ -63,10 +63,10 @@ export class UserController {
     return this.userService.google(googleInput, req)
   }
 
-  @Post('facebook')
-  facebook(@Body() facebookInput: FacebookInput, @Req() req: Request) {
-    return this.userService.facebook(facebookInput, req)
-  }
+  // @Post('facebook')
+  // facebook(@Body() facebookInput: FacebookInput, @Req() req: Request) {
+  //   return this.userService.facebook(facebookInput, req)
+  // }
 
   @Post('resend-otp')
   resend(@Body('phone') phone: string) {

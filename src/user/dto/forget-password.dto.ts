@@ -1,6 +1,6 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class ForgetPasswordDto {
+export class ForgetPasswordInput {
   @IsString()
   @IsNotEmpty()
   phone: string;

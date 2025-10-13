@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class GoogleDto {
+export class GoogleInput {
   @IsOptional()
   @IsString()
   code?: string;

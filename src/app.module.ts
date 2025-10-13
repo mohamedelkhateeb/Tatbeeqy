@@ -46,7 +46,7 @@ import { WithdrawModule } from "./withdraw/withdraw.module";
     }),
 
     // // Your feature modules
-    // UserModule,
+    UserModule,
     // BrandModule,
     // TagModule,
     // CategoryModule,
