@@ -159,6 +159,10 @@ export class UserController {
     return this.userService.getAdmins(searchInput)
   }
 
+  //  @docs   Admin Can Create User
+  //  @Route  POST /api/v1/user
+  //  @access Private [admin]
+
   @Roles(Role.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   @Post('admins')
