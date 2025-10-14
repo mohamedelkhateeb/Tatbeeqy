@@ -1,12 +1,48 @@
-import { ConfigService } from "@nestjs/config";
+import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import * as twilio from 'twilio'
 
-//Config Service
-const configService = new ConfigService();
+@Injectable()
+export class SmsService {
+  private client: twilio.Twilio
 
-export const sentSms = async (to: string, message: string) => {
-    const greenwebsms = new URLSearchParams();
-    greenwebsms.append('token', configService.get<string>("SMS_TOKEN"));
-    greenwebsms.append('to', `+${to}`);
-    greenwebsms.append('message', message);
-    return greenwebsms;
+  constructor(private readonly configService: ConfigService) {
+    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID')
+    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN')
+
+    if (!accountSid || !authToken) {
+      throw new Error('Twilio credentials are missing in .env')
+    }
+
+    this.client = twilio(accountSid, authToken)
+  }
+
+  async sendOtp(to: string, otp: string) {
+    const from = this.configService.get<string>('TWILIO_PHONE_NUMBER')
+
+    if (!from) {
+      throw new Error('Missing TWILIO_PHONE_NUMBER in .env')
+    }
+
+    console.log('📱 Sending OTP:', otp, 'to', to)
+
+    try {
+      const message = await this.client.messages.create({
+        body: `${otp} is your ${this.configService.get<string>(
+          'APP_NAME',
+        )} verification code. Do not share it.`,
+        from,
+        to: to.startsWith('+') ? to : `+${to}`, // ensures country code
+      })
+
+      return {
+        success: true,
+        sid: message.sid,
+        status: message.status,
+      }
+    } catch (error) {
+      console.error('❌ Twilio error:', error)
+      throw new Error('Failed to send OTP')
+    }
+  }
 }

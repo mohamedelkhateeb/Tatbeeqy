@@ -78,13 +78,13 @@ export class SellerResolver {
         return this.sellerService.getProfile(reqUser);
     };
 
-    //Create seller
-    @Mutation(() => SuccessInfo, { name: "createSeller" })
-    create(
-        @Args("sellerInput") sellerInput: SellerInput
-    ) {
-        return this.sellerService.create(sellerInput);
-    };
+    // //Create seller
+    // @Mutation(() => SuccessInfo, { name: "createSeller" })
+    // create(
+    //     @Args("sellerInput") sellerInput: SellerInput
+    // ) {
+    //     return this.sellerService.create(sellerInput);
+    // };
 
     //Verify Seller Phone
     @Mutation(() => SuccessInfo, { name: "verifySellerPhone" })

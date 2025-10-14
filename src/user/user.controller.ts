@@ -68,25 +68,25 @@ export class UserController {
   //   return this.userService.facebook(facebookInput, req)
   // }
 
-  @Post('resend-otp')
-  resend(@Body('phone') phone: string) {
-    return this.userService.resend(phone)
-  }
+  // @Post('resend-otp')
+  // resend(@Body('phone') phone: string) {
+  //   return this.userService.resend(phone)
+  // }
 
-  @Post('phone-login')
-  phoneLogin(@Body('phone') phone: string) {
-    return this.userService.phoneLogin(phone)
-  }
+  // @Post('phone-login')
+  // phoneLogin(@Body('phone') phone: string) {
+  //   return this.userService.phoneLogin(phone)
+  // }
 
   @Post('verify-phone')
   verify(@Body() verifyPhoneInput: VerifyPhoneInput, @Req() req: Request) {
     return this.userService.verify(verifyPhoneInput, req)
   }
 
-  @Post('forget-password')
-  forgetPassword(@Body() forgetPasswordInput: ForgetPasswordInput) {
-    return this.userService.forgetPassword(forgetPasswordInput)
-  }
+  // @Post('forget-password')
+  // forgetPassword(@Body() forgetPasswordInput: ForgetPasswordInput) {
+  //   return this.userService.forgetPassword(forgetPasswordInput)
+  // }
 
   @Post('reset-password')
   resetPassword(@Body() resetPasswordInput: ResetPasswordInput) {
@@ -125,14 +125,14 @@ export class UserController {
     return this.userService.available(phoneInput)
   }
 
-  @UseGuards(AuthGuard)
-  @Patch('change-phone')
-  changePhone(
-    @Body() phoneInput: PhoneInput,
-    @Req() req: Request & { user: ReqUser },
-  ) {
-    return this.userService.phoneChange(phoneInput, req.user)
-  }
+  // @UseGuards(AuthGuard)
+  // @Patch('change-phone')
+  // changePhone(
+  //   @Body() phoneInput: PhoneInput,
+  //   @Req() req: Request & { user: ReqUser },
+  // ) {
+  //   return this.userService.phoneChange(phoneInput, req.user)
+  // }
 
   @UseGuards(AuthGuard)
   @Patch('change-phone-verify')

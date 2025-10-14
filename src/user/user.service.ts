@@ -16,7 +16,6 @@ import { ConfigService } from '@nestjs/config'
 const configService = new ConfigService()
 
 //Helpers
-import { sentSms } from '@/helper/sms.helper'
 
 //Orm Entity
 import { User } from './model/user.entity'
@@ -45,6 +44,7 @@ import { AdminInput } from './dto/admin.dto'
 
 //Req User Types
 import { ReqUser } from '@/auth/entities/user.types'
+import { SmsService } from '@/helper/sms.helper'
 
 @Injectable()
 export class UserService {
@@ -54,6 +54,7 @@ export class UserService {
     @InjectRepository(Session) private sessionRepository: Repository<Session>,
     private readonly httpService: HttpService,
     private readonly jwtService: JwtService,
+    private readonly smsService: SmsService,
   ) {}
 
   //Get Profile
@@ -131,23 +132,22 @@ export class UserService {
       is_verified: false,
     })
     const secret = speakeasy.generateSecret({ length: 20 })
-    const otp = speakeasy.totp({
-      secret: secret.base32,
-      encoding: 'base32',
-    })
-    const smsData = await sentSms(
-      signupInput.phone,
-      `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
-    )
-    const { data } = await firstValueFrom(
-      this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
-        catchError((error: AxiosError) => {
-          throw new NotFoundException('Something Went Wrong!')
-        }),
-      ),
-    )
-    if (!data.toString().includes('Ok:'))
-      throw new NotFoundException(data.toString())
+    // const otp = speakeasy.totp({
+    //   secret: secret.base32,
+    //   encoding: 'base32',
+    // })
+    const otp = "1234"
+    // const smsData = await this.smsService.sendOtp(`+${signupInput.phone}`, otp)
+
+    // const { data } = await firstValueFrom(
+    //   this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
+    //     catchError((error: AxiosError) => {
+    //       throw new NotFoundException('Something Went Wrong!')
+    //     }),
+    //   ),
+    // )
+    // if (!data.toString().includes('Ok:'))
+    //   throw new NotFoundException(data.toString())
     console.log(otp)
     const passwordHash = await bcrypt.hash(signupInput.password, 12)
     const newUser = this.userRepository.create({
@@ -187,73 +187,73 @@ export class UserService {
   }
 
   //Resend otp
-  async resend(phone: string) {
-    const user = await this.userRepository.findOneBy({
-      phone: phone,
-    })
-    if (!user) throw new NotFoundException('User not found!')
-    const secret = speakeasy.generateSecret({ length: 20 })
-    const otp = speakeasy.totp({
-      secret: secret.base32,
-      encoding: 'base32',
-    })
-    const smsData = await sentSms(
-      phone,
-      `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
-    )
-    const { data } = await firstValueFrom(
-      this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
-        catchError((error: AxiosError) => {
-          throw new NotFoundException('Something Went Wrong!')
-        }),
-      ),
-    )
-    if (!data.toString().includes('Ok:'))
-      throw new NotFoundException(data.toString())
-    await this.userRepository.update(user.id, { otp: secret.base32 })
-    return {
-      success: true,
-      message: 'Otp send successfully!',
-    }
-  }
+  // async resend(phone: string) {
+  //   const user = await this.userRepository.findOneBy({
+  //     phone: phone,
+  //   })
+  //   if (!user) throw new NotFoundException('User not found!')
+  //   const secret = speakeasy.generateSecret({ length: 20 })
+  //   const otp = speakeasy.totp({
+  //     secret: secret.base32,
+  //     encoding: 'base32',
+  //   })
+  //   const smsData = await sentSms(
+  //     phone,
+  //     `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
+  //   )
+  //   const { data } = await firstValueFrom(
+  //     this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
+  //       catchError((error: AxiosError) => {
+  //         throw new NotFoundException('Something Went Wrong!')
+  //       }),
+  //     ),
+  //   )
+  //   if (!data.toString().includes('Ok:'))
+  //     throw new NotFoundException(data.toString())
+  //   await this.userRepository.update(user.id, { otp: secret.base32 })
+  //   return {
+  //     success: true,
+  //     message: 'Otp send successfully!',
+  //   }
+  // }
 
-  //Phone login
-  async phoneLogin(phone: string) {
-    const user = await this.userRepository.findOneBy({
-      phone: phone,
-    })
-    const secret = speakeasy.generateSecret({ length: 20 })
-    const otp = speakeasy.totp({
-      secret: secret.base32,
-      encoding: 'base32',
-    })
-    const smsData = await sentSms(
-      phone,
-      `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
-    )
-    const { data } = await firstValueFrom(
-      this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
-        catchError((error: AxiosError) => {
-          throw new NotFoundException('Something Went Wrong!')
-        }),
-      ),
-    )
-    if (!data.toString().includes('Ok:'))
-      throw new NotFoundException(data.toString())
-    if (user) {
-      await this.userRepository.update(user.id, { otp: secret.base32 })
-    } else {
-      const newUser = await this.userRepository.create({
-        phone: phone,
-        otp: secret.base32,
-      })
-      await this.userRepository.save(newUser)
-    }
-    return {
-      success: true,
-      message: 'Code send successfully!',
-    }
-  }
+  // //Phone login
+  // async phoneLogin(phone: string) {
+  //   const user = await this.userRepository.findOneBy({
+  //     phone: phone,
+  //   })
+  //   const secret = speakeasy.generateSecret({ length: 20 })
+  //   const otp = speakeasy.totp({
+  //     secret: secret.base32,
+  //     encoding: 'base32',
+  //   })
+  //   const smsData = await sentSms(
+  //     phone,
+  //     `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
+  //   )
+  //   const { data } = await firstValueFrom(
+  //     this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
+  //       catchError((error: AxiosError) => {
+  //         throw new NotFoundException('Something Went Wrong!')
+  //       }),
+  //     ),
+  //   )
+  //   if (!data.toString().includes('Ok:'))
+  //     throw new NotFoundException(data.toString())
+  //   if (user) {
+  //     await this.userRepository.update(user.id, { otp: secret.base32 })
+  //   } else {
+  //     const newUser = await this.userRepository.create({
+  //       phone: phone,
+  //       otp: secret.base32,
+  //     })
+  //     await this.userRepository.save(newUser)
+  //   }
+  //   return {
+  //     success: true,
+  //     message: 'Code send successfully!',
+  //   }
+  // }
 
   //Verify Phone
   async verify(verifyPhoneInput: VerifyPhoneInput, req: Request) {
@@ -293,9 +293,8 @@ export class UserService {
 
   //Login with phone or password
   async login(loginInput: LoginInput, req: Request) {
+    console.log(loginInput)
 
-    console.log(loginInput);
-    
     const user = await this.userRepository.findOne({
       where: [{ email: loginInput.phoneOrEmail }],
       select: ['id', 'phone', 'password'],
@@ -324,7 +323,6 @@ export class UserService {
 
   //Login with email and password for admin
   async adminLogin(loginInput: LoginInput, req: Request) {
-
     const user = await this.userRepository.findOne({
       where: [
         { phone: loginInput.phoneOrEmail },
@@ -336,15 +334,14 @@ export class UserService {
     if (user.role === 'user' || user.role === 'seller')
       throw new NotFoundException("You can't login here!")
 
-    
     const verifyPass = await bcrypt.compare(loginInput.password, user.password)
     if (!verifyPass) throw new NotFoundException('Wrong email or password!')
-      const token = this.jwtService.sign({ phone: user.phone, id: user.id })
+    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
     const session = await this.sessionRepository.create({
       cookie: token,
       user: { id: user.id },
     })
-    console.log(loginInput);
+    console.log(loginInput)
     await this.sessionRepository.save(session)
     req.res.cookie('9717f25d01fb469d5d6a3c6c70e1919aebec', token, {
       maxAge: 90 * 24 * 60 * 60 * 1000,
@@ -543,35 +540,35 @@ export class UserService {
   }
 
   //Forget Password
-  async forgetPassword(forgetPasswordInput: ForgetPasswordInput) {
-    const user = await this.userRepository.findOneBy({
-      phone: forgetPasswordInput.phone,
-    })
-    if (!user) throw new NotFoundException('No user found with this phone!')
-    const secret = speakeasy.generateSecret({ length: 20 })
-    const otp = speakeasy.totp({
-      secret: secret.base32,
-      encoding: 'base32',
-    })
-    const smsData = await sentSms(
-      forgetPasswordInput.phone,
-      `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
-    )
-    const { data } = await firstValueFrom(
-      this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
-        catchError((error: AxiosError) => {
-          throw new NotFoundException('Something Went Wrong!')
-        }),
-      ),
-    )
-    if (!data.toString().includes('Ok:'))
-      throw new NotFoundException(data.toString())
-    await this.userRepository.update(user.id, { otp: secret.base32 })
-    return {
-      success: true,
-      message: 'Verification code sent successfully!',
-    }
-  }
+  // async forgetPassword(forgetPasswordInput: ForgetPasswordInput) {
+  //   const user = await this.userRepository.findOneBy({
+  //     phone: forgetPasswordInput.phone,
+  //   })
+  //   if (!user) throw new NotFoundException('No user found with this phone!')
+  //   const secret = speakeasy.generateSecret({ length: 20 })
+  //   const otp = speakeasy.totp({
+  //     secret: secret.base32,
+  //     encoding: 'base32',
+  //   })
+  //   const smsData = await sentSms(
+  //     forgetPasswordInput.phone,
+  //     `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
+  //   )
+  //   const { data } = await firstValueFrom(
+  //     this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
+  //       catchError((error: AxiosError) => {
+  //         throw new NotFoundException('Something Went Wrong!')
+  //       }),
+  //     ),
+  //   )
+  //   if (!data.toString().includes('Ok:'))
+  //     throw new NotFoundException(data.toString())
+  //   await this.userRepository.update(user.id, { otp: secret.base32 })
+  //   return {
+  //     success: true,
+  //     message: 'Verification code sent successfully!',
+  //   }
+  // }
 
   //Reset Password
   async resetPassword(resetPasswordInput: ResetPasswordInput) {
@@ -618,35 +615,35 @@ export class UserService {
   }
 
   //Phone Change
-  async phoneChange(phoneInput: PhoneInput, reqUser: ReqUser) {
-    const user = await this.userRepository.findOneBy({
-      phone: phoneInput.phone,
-    })
-    if (user) throw new NotFoundException('Phone is already in use!')
-    const secret = speakeasy.generateSecret({ length: 20 })
-    const otp = speakeasy.totp({
-      secret: secret.base32,
-      encoding: 'base32',
-    })
-    const smsData = await sentSms(
-      phoneInput.phone,
-      `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
-    )
-    const { data } = await firstValueFrom(
-      this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
-        catchError((error: AxiosError) => {
-          throw new NotFoundException('Something Went Wrong!')
-        }),
-      ),
-    )
-    if (!data.toString().includes('Ok:'))
-      throw new NotFoundException(data.toString())
-    await this.userRepository.update(reqUser.id, { otp: secret.base32 })
-    return {
-      success: true,
-      message: 'Verification code sent',
-    }
-  }
+  // async phoneChange(phoneInput: PhoneInput, reqUser: ReqUser) {
+  //   const user = await this.userRepository.findOneBy({
+  //     phone: phoneInput.phone,
+  //   })
+  //   if (user) throw new NotFoundException('Phone is already in use!')
+  //   const secret = speakeasy.generateSecret({ length: 20 })
+  //   const otp = speakeasy.totp({
+  //     secret: secret.base32,
+  //     encoding: 'base32',
+  //   })
+  //   const smsData = await sentSms(
+  //     phoneInput.phone,
+  //     `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`,
+  //   )
+  //   const { data } = await firstValueFrom(
+  //     this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
+  //       catchError((error: AxiosError) => {
+  //         throw new NotFoundException('Something Went Wrong!')
+  //       }),
+  //     ),
+  //   )
+  //   if (!data.toString().includes('Ok:'))
+  //     throw new NotFoundException(data.toString())
+  //   await this.userRepository.update(reqUser.id, { otp: secret.base32 })
+  //   return {
+  //     success: true,
+  //     message: 'Verification code sent',
+  //   }
+  // }
 
   //Phone Change Verify
   async changePhoneVerify(

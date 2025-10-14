@@ -14,7 +14,7 @@ import { Bank } from "./model/bank.entity";
 import { User } from "@/user/model/user.entity";
 
 //Sent Sms
-import { sentSms } from "@/helper/sms.helper";
+// import { sentSms } from "@/helper/sms.helper";
 
 //Dto
 import { SellerInput } from "./dto/seller.dto";
@@ -122,49 +122,49 @@ export class SellerService {
     };
 
     //Create seller
-    async create(sellerInput: SellerInput) {
-        const seller = await this.sellerRepository.findOneBy({
-            shopName: sellerInput.shopName,
-            phone: sellerInput.phone
-        });
-        if (seller) throw new NotFoundException("Seller already registered! Please try again with different name or phone!");
-        const user = await this.userRepository.findOneBy({
-            phone: sellerInput.phone,
-            is_verified: true
-        });
-        if (user) throw new NotFoundException("User already registered!");
-        await this.userRepository.delete({
-            phone: sellerInput.phone,
-            is_verified: false
-        });
-        const secret = speakeasy.generateSecret({ length: 20 });
-        const otp = speakeasy.totp({
-            secret: secret.base32,
-            encoding: 'base32'
-        });
-        console.log(otp)
-        const smsData = await sentSms(sellerInput.phone, `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`);
-        const { data } = await firstValueFrom(
-            this.httpService.post("http://api.greenweb.com.bd/api.php", smsData).pipe(
-                catchError((error: AxiosError) => {
-                    throw new NotFoundException("Something Went Wrong!")
-                })
-            )
-        );
-        if (!data.toString().includes("Ok:")) throw new NotFoundException(data.toString());
-        const passwordHash = await bcrypt.hash(sellerInput.password, 12);
-        const newUser = this.userRepository.create({
-            name: sellerInput.shopName,
-            phone: sellerInput.phone,
-            password: passwordHash,
-            otp: secret.base32
-        });
-        await this.userRepository.save(newUser);
-        return {
-            success: true,
-            message: "Please verify your phone number!"
-        }
-    }
+    // async create(sellerInput: SellerInput) {
+    //     const seller = await this.sellerRepository.findOneBy({
+    //         shopName: sellerInput.shopName,
+    //         phone: sellerInput.phone
+    //     });
+    //     if (seller) throw new NotFoundException("Seller already registered! Please try again with different name or phone!");
+    //     const user = await this.userRepository.findOneBy({
+    //         phone: sellerInput.phone,
+    //         is_verified: true
+    //     });
+    //     if (user) throw new NotFoundException("User already registered!");
+    //     await this.userRepository.delete({
+    //         phone: sellerInput.phone,
+    //         is_verified: false
+    //     });
+    //     const secret = speakeasy.generateSecret({ length: 20 });
+    //     const otp = speakeasy.totp({
+    //         secret: secret.base32,
+    //         encoding: 'base32'
+    //     });
+    //     console.log(otp)
+    //     const smsData = await sentSms(sellerInput.phone, `${otp} is your security code for nekmart. Do not share security code with others. This code will be expired in 5 minutes.`);
+    //     const { data } = await firstValueFrom(
+    //         this.httpService.post("http://api.greenweb.com.bd/api.php", smsData).pipe(
+    //             catchError((error: AxiosError) => {
+    //                 throw new NotFoundException("Something Went Wrong!")
+    //             })
+    //         )
+    //     );
+    //     if (!data.toString().includes("Ok:")) throw new NotFoundException(data.toString());
+    //     const passwordHash = await bcrypt.hash(sellerInput.password, 12);
+    //     const newUser = this.userRepository.create({
+    //         name: sellerInput.shopName,
+    //         phone: sellerInput.phone,
+    //         password: passwordHash,
+    //         otp: secret.base32
+    //     });
+    //     await this.userRepository.save(newUser);
+    //     return {
+    //         success: true,
+    //         message: "Please verify your phone number!"
+    //     }
+    // }
 
     //Verify seller phone number
     async verifyPhone(sellerVerifyInput: SellerVerifyInput) {

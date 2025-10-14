@@ -11,9 +11,8 @@ import { Session } from './session.entity'
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: string
-
   @Column({ type: 'text' })
   phone: string
 

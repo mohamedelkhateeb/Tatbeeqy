@@ -11,6 +11,7 @@ import { Session } from './model/session.entity'
 //Service and Resolver
 import { UserService } from './user.service'
 import { UserController } from './user.controller'
+import { SmsService } from '@/helper/sms.helper'
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { UserController } from './user.controller'
     }),
     HttpModule,
   ],
-  providers: [UserService],
+  providers: [UserService, SmsService],
   controllers: [UserController], // 👈 add this
   exports: [TypeOrmModule, JwtModule],
 })
