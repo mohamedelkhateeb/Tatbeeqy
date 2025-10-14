@@ -162,8 +162,6 @@ export class UserService {
     }
   }
 
-
-
   //Add Admins
   async addAdmin(adminInput: AdminInput) {
     const user = await this.userRepository.findOneBy({
@@ -295,11 +293,11 @@ export class UserService {
 
   //Login with phone or password
   async login(loginInput: LoginInput, req: Request) {
+
+    console.log(loginInput);
+    
     const user = await this.userRepository.findOne({
-      where: [
-        { phone: loginInput.phoneOrEmail },
-        { email: loginInput.phoneOrEmail },
-      ],
+      where: [{ email: loginInput.phoneOrEmail }],
       select: ['id', 'phone', 'password'],
     })
     if (!user) throw new NotFoundException('Wrong email or password!')
@@ -326,6 +324,7 @@ export class UserService {
 
   //Login with email and password for admin
   async adminLogin(loginInput: LoginInput, req: Request) {
+
     const user = await this.userRepository.findOne({
       where: [
         { phone: loginInput.phoneOrEmail },
@@ -336,13 +335,16 @@ export class UserService {
     if (!user) throw new NotFoundException('Wrong email or password!')
     if (user.role === 'user' || user.role === 'seller')
       throw new NotFoundException("You can't login here!")
+
+    
     const verifyPass = await bcrypt.compare(loginInput.password, user.password)
     if (!verifyPass) throw new NotFoundException('Wrong email or password!')
-    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
+      const token = this.jwtService.sign({ phone: user.phone, id: user.id })
     const session = await this.sessionRepository.create({
       cookie: token,
       user: { id: user.id },
     })
+    console.log(loginInput);
     await this.sessionRepository.save(session)
     req.res.cookie('9717f25d01fb469d5d6a3c6c70e1919aebec', token, {
       maxAge: 90 * 24 * 60 * 60 * 1000,
