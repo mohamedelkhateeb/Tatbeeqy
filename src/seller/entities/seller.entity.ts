@@ -1,65 +1,66 @@
-import { ObjectType, Field, Float } from '@nestjs/graphql'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  CreateDateColumn,
+  Column,
+  OneToOne,
+  JoinColumn,
+  Relation,
+} from 'typeorm'
 
-//Entities
-import { User } from '@/user/entities/user.model'
-import { Meta } from '@/user/entities/meta.model'
+import { User } from '@/user/model/user.entity'
+import { Bank } from './bank.entity'
 
-@ObjectType()
-export class Bank {
-  @Field(() => String, { nullable: false })
-  id: string
-  @Field(() => String, { nullable: false })
-  name: string
-  @Field(() => String, { nullable: false })
-  accNumber: string
-  @Field(() => String, { nullable: false })
-  routing: string
-  @Field(() => String, { nullable: false })
-  bankName: string
-  @Field(() => String, { nullable: false })
-  branch: string
-}
-
-@ObjectType()
+@Entity()
 export class Seller {
-  @Field(() => String, { nullable: false })
+  @PrimaryGeneratedColumn('identity')
   id: string
-  @Field(() => String, { nullable: false })
-  shopName: string
-  @Field(() => String, { nullable: false })
-  phone: string
-  @Field(() => String, { nullable: false })
-  logo: string
-  @Field(() => String, { nullable: false })
-  banner: string
-  @Field(() => String, { nullable: false })
-  address: string
-  @Field(() => String, { nullable: true })
-  metaTitle: string
-  @Field(() => String, { nullable: true })
-  metaDescription: string
-  @Field(() => Boolean, { nullable: false })
-  is_verified: boolean
-  @Field(() => Boolean, { nullable: false })
-  is_banned: boolean
-  @Field(() => Bank, { nullable: true })
-  bank: Bank
-  @Field(() => User, { nullable: true })
-  user: User
-  @Field(() => Float, { nullable: false })
-  totalReview: number
-  @Field(() => Float, { nullable: false })
-  totalRating: number
-  @Field(() => Date, { nullable: false })
-  created_at: Date
-  @Field(() => Date, { nullable: false })
-  updated_at: Date
-}
 
-@ObjectType()
-export class GetSellers {
-  @Field(() => [Seller], { nullable: false })
-  results: [Seller]
-  @Field(() => Meta, { nullable: false })
-  meta: Meta
+  @Column({ type: 'text' })
+  shopName: string
+
+  @Column({ type: 'text' })
+  phone: string
+
+  @Column({ type: 'text' })
+  logo: string
+
+  @Column({ type: 'text' })
+  banner: string
+
+  @Column({ type: 'text' })
+  address: string
+
+  @Column({ type: 'text', nullable: true })
+  metaTitle: string
+
+  @Column({ type: 'text', nullable: true })
+  metaDescription: string
+
+  @Column({ type: 'boolean', default: false })
+  is_verified: boolean
+
+  @Column({ type: 'boolean', default: false })
+  is_banned: boolean
+
+  @OneToOne(() => Bank, (bank) => bank.seller, { cascade: true })
+  @JoinColumn()
+  bank: Relation<Bank>
+
+  @OneToOne(() => User)
+  @JoinColumn()
+  user: Relation<User>
+
+  @Column({ type: 'numeric', default: 0 })
+  totalReview: number
+
+  @Column({ type: 'numeric', default: 0 })
+  totalRating: number
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updated_at: Date
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  created_at: Date
 }

@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, Column, ManyToOne, Relation } from "typeorm";
 
 //Orm Entity
-import { Seller } from "@/seller/model/seller.entity";
 import { User } from "@/user/model/user.entity";
+import { Seller } from "@/seller/entities/seller.entity";
 
 
 @Entity()

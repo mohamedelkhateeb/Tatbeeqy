@@ -1,3 +1,4 @@
+import { Seller } from '@/seller/entities/seller.entity'
 import {
   CanActivate,
   ExecutionContext,
@@ -7,9 +8,6 @@ import {
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-
-//Orm entity
-import { Seller } from '@/seller/model/seller.entity'
 
 @Injectable()
 export class SellerGuard implements CanActivate {

@@ -58,7 +58,7 @@ import { WithdrawModule } from './withdraw/withdraw.module'
     PlatformModule,
     // HomeModule,
     // SettingModule,
-    // SellerModule,
+    SellerModule,
     // ProductModule,
     // WishlistModule,
     // CartModule,

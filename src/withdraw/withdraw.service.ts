@@ -6,7 +6,6 @@ import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
 //Orm Entity
 import { Income } from './model/income.entity'
 import { Withdraw } from './model/withdraw.entity'
-import { Seller } from '@/seller/model/seller.entity'
 // import { Platform } from "@/platform/model/platform.entity";
 
 //Dto
@@ -15,6 +14,7 @@ import { SearchInput } from '@/user/dto/search.dto'
 
 //Types
 import { ReqUser } from '@/auth/entities/user.types'
+import { Seller } from '@/seller/entities/seller.entity'
 
 @Injectable()
 export class WithdrawService {

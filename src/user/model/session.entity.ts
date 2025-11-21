@@ -6,26 +6,26 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   Relation,
-} from 'typeorm';
-import { User } from './user.entity';
+} from 'typeorm'
+import { User } from './user.entity'
 
 @Entity({ name: 'sessions' })
 export class Session {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: string
 
   @Column({ type: 'text' })
-  cookie: string;
+  cookie: string
 
   @ManyToOne(() => User, (user) => user.sessions, {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  user: Relation<User>;
+  user: Relation<User>
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at: Date;
+  updated_at: Date
 
   @CreateDateColumn({ type: 'timestamptz' })
-  created_at: Date;
+  created_at: Date
 }

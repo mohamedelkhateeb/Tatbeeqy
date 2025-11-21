@@ -2,8 +2,8 @@ import { Entity, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, Col
 
 //Schema
 import { Product } from "@/product/model/product.entity";
-import { Seller } from "@/seller/model/seller.entity";
 import { User } from "@/user/model/user.entity";
+import { Seller } from "@/seller/entities/seller.entity";
 
 @Entity()
 export class Cart {
