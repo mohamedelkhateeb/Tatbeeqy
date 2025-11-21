@@ -1,14 +1,14 @@
-import { ObjectType, Field, Float } from "@nestjs/graphql";
+import { ObjectType, Field, Float } from '@nestjs/graphql'
 
 //Entities
-import { User } from "@/user/entities/user.entity";
+import { User } from '@/user/entities/user.model'
 
 @ObjectType()
 export class UserPoints {
-    @Field(() => String, { nullable: false })
-    id: string;
-    @Field(() => Float, { nullable: false })
-    points: number;
-    @Field(() => User, { nullable: true })
-    user: User;
+  @Field(() => String, { nullable: false })
+  id: string
+  @Field(() => Float, { nullable: false })
+  points: number
+  @Field(() => User, { nullable: true })
+  user: User
 }
