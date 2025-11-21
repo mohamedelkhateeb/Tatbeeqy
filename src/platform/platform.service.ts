@@ -18,7 +18,7 @@ export class PlatformService {
     return this.platformRepo.find()
   }
   async findOne(id: number) {
-    const setting = await this.platformRepo.findOne(id)
+    const setting = await this.platformRepo.findOne({ where: { id } })
     if (!setting) throw new NotFoundException('Setting not found')
     return setting
   }

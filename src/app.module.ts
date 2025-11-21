@@ -1,32 +1,32 @@
-import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { TypeOrmModule } from '@nestjs/typeorm'
 
 // Modules
-import { UserModule } from "./user/user.module";
-import { CategoryModule } from "./category/category.module";
-import { BrandModule } from "./brand/brand.module";
-import { TagModule } from "./tag/tag.module";
-import { AttributeModule } from "./attributes/attributes.module";
-import { CouponModule } from "./coupon/coupon.module";
-import { PaymentModule } from "./payment/payment.module";
-import { ShippingModule } from "./shipping/shipping.module";
-import { FlashModule } from "./flash/flash.module";
-import { PlatformModule } from "./platform/platform.module";
-import { HomeModule } from "./homepgae/home.module";
-import { SettingModule } from "./settings/settings.module";
-import { SellerModule } from "./seller/seller.module";
-import { ProductModule } from "./product/product.module";
-import { WishlistModule } from "./wishlist/wishlist.module";
-import { CartModule } from "./cart/cart.module";
-import { PreorderModule } from "./preorder/preorder.module";
-import { AddressModule } from "./address/address.module";
-import { OrderModule } from "./orders/orders.module";
-import { AnalyticsModule } from "./analytics/analytics.module";
-import { PointModule } from "./points/points.module";
-import { ReviewModule } from "./reviews/review.module";
-import { RefundModule } from "./refund/refund.module";
-import { WithdrawModule } from "./withdraw/withdraw.module";
+import { UserModule } from './user/user.module'
+import { CategoryModule } from './category/category.module'
+import { BrandModule } from './brand/brand.module'
+import { TagModule } from './tag/tag.module'
+import { AttributeModule } from './attributes/attributes.module'
+import { CouponModule } from './coupon/coupon.module'
+import { PaymentModule } from './payment/payment.module'
+import { ShippingModule } from './shipping/shipping.module'
+import { FlashModule } from './flash/flash.module'
+import { PlatformModule } from './platform/platform.module'
+import { HomeModule } from './homepgae/home.module'
+import { SettingModule } from './settings/settings.module'
+import { SellerModule } from './seller/seller.module'
+import { ProductModule } from './product/product.module'
+import { WishlistModule } from './wishlist/wishlist.module'
+import { CartModule } from './cart/cart.module'
+import { PreorderModule } from './preorder/preorder.module'
+import { AddressModule } from './address/address.module'
+import { OrderModule } from './orders/orders.module'
+import { AnalyticsModule } from './analytics/analytics.module'
+import { PointModule } from './points/points.module'
+import { ReviewModule } from './reviews/review.module'
+import { RefundModule } from './refund/refund.module'
+import { WithdrawModule } from './withdraw/withdraw.module'
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ import { WithdrawModule } from "./withdraw/withdraw.module";
 
     // TypeORM connection
     TypeOrmModule.forRoot({
-      type: "postgres",
+      type: 'postgres',
       host: process.env.POSTGRES_HOST,
       port: parseInt(<string>process.env.POSTGRES_PORT),
       username: process.env.POSTGRES_USER,
@@ -55,7 +55,7 @@ import { WithdrawModule } from "./withdraw/withdraw.module";
     // PaymentModule,
     // ShippingModule,
     // FlashModule,
-    // PlatformModule,
+    PlatformModule,
     // HomeModule,
     // SettingModule,
     // SellerModule,

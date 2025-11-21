@@ -15,10 +15,8 @@ import { AuthGuard } from '@/auth/auth.guard'
 import { RolesGuard } from '@/auth/roles.guard'
 import { Roles } from '@/auth/decorator/auth.decorator'
 import { Role } from '@/auth/enum/auth.enum'
-@UseGuards(AuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
-@Controller('platform')
-@Controller('platform')
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('platform')
 export class PlatformController {
   constructor(private readonly platformService: PlatformService) {}
