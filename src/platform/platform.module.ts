@@ -1,23 +1,13 @@
-import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-
-//Orm entity
-import { Platform } from "./model/platform.entity";
-
-//Service and Resolver
-import { PlatformService } from "./platform.service";
-import { PlatformResolver } from "./platform.resolver";
-
-//Module
-import { UserModule } from "src/user/user.module";
+import { Module } from '@nestjs/common'
+import { PlatformService } from './platform.service'
+import { PlatformController } from './platform.controller'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { PlatformRepository } from './platform.repository'
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Platform]),
-        UserModule
-    ],
-    providers: [PlatformService, PlatformResolver],
-    exports: [TypeOrmModule]
+  imports: [TypeOrmModule.forFeature([PlatformRepository])],
+  controllers: [PlatformController],
+  providers: [PlatformService],
+  exports: [PlatformService],
 })
-
-export class PlatformModule { };
+export class PlatformModule {}
