@@ -1,10 +1,6 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator'
+import { IsNotEmpty, IsString, IsOptional } from 'class-validator'
 
 export class SellerSignupDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string // user name
-
   @IsString()
   @IsNotEmpty()
   phone: string
@@ -15,29 +11,21 @@ export class SellerSignupDto {
 
   @IsString()
   @IsNotEmpty()
+  name: string
+
+  @IsString()
+  @IsNotEmpty()
   shopName: string
 
   @IsString()
+  @IsNotEmpty()
+  address: string
+
   @IsOptional()
+  @IsString()
   logo?: string
 
-  @IsString()
   @IsOptional()
+  @IsString()
   banner?: string
-
-  @IsString()
-  @IsOptional()
-  address?: string
-
-  @IsString()
-  @IsOptional()
-  bankName?: string
-
-  @IsString()
-  @IsOptional()
-  accountNumber?: string
-
-  @IsString()
-  @IsOptional()
-  storeSlug?: string
 }

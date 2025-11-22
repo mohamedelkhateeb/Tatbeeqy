@@ -25,11 +25,17 @@ import { Roles } from '@/auth/decorator/auth.decorator'
 import { Role } from '@/auth/enum/auth.enum'
 import { UpdateSellerDto } from './dto/update-seller.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { SignupInput } from '@/user/dto/signup.dto'
+import { SellerSignupDto } from './dto/create-seller.dto'
 @ApiTags('Seller')
 @ApiBearerAuth()
 @Controller('seller')
 export class SellerController {
   constructor(private readonly sellerService: SellerService) {}
+  @Post('signup')
+  signup(@Body() signupInput: SellerSignupDto) {
+    return this.sellerService.signup(signupInput)
+  }
 
   @Get()
   gets(@Query() searchInput: SearchInput) {

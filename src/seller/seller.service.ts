@@ -4,15 +4,22 @@ import {
   BadRequestException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, ILike } from 'typeorm'
+import { Repository, ILike, DeepPartial } from 'typeorm'
+import * as bcrypt from 'bcrypt'
+
 import { User } from '@/user/model/user.entity'
 import { SearchInput } from '@/user/dto/search.dto'
 import { BankInput } from './dto/bank.dto'
 import { SellerVerifyInput } from './dto/verify.dto'
+import * as speakeasy from 'speakeasy'
+
 import { ReqUser } from '@/auth/entities/user.types'
 import { Seller } from './entities/seller.entity'
 import { Bank } from './entities/bank.entity'
 import { UpdateSellerDto } from './dto/update-seller.dto'
+import { SignupInput } from '@/user/dto/signup.dto'
+import { SellerSignupDto } from './dto/create-seller.dto'
+import { Role } from '@/auth/enum/auth.enum'
 
 @Injectable()
 export class SellerService {
@@ -23,6 +30,8 @@ export class SellerService {
     private bankRepo: Repository<Bank>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(Seller)
+    private storeRepo: Repository<Seller>,
   ) {}
 
   async gets(input: SearchInput) {
@@ -36,6 +45,42 @@ export class SellerService {
 
   async getsByAdmin(input: SearchInput) {
     return this.gets(input)
+  }
+
+  async signup(input: SellerSignupDto) {
+    const exists = await this.userRepo.findOneBy({
+      phone: input.phone,
+    })
+    if (exists) throw new BadRequestException('Phone already registered')
+    const passwordHash = await bcrypt.hash(input.password, 12)
+    const newUser = this.userRepo.create({
+      name: input.name,
+      phone: input.phone,
+      password: passwordHash,
+      role: Role.SELLER,
+      is_verified: true,
+    })
+    await this.userRepo.save(newUser)
+    const bank = this.bankRepo.create({})
+    await this.bankRepo.save(bank)
+    const store = this.storeRepo.create({})
+    await this.storeRepo.save(store)
+    const seller = this.sellerRepo.create({
+      shopName: input.shopName,
+      address: input.address,
+      logo: input.logo || '',
+      banner: input.banner || '',
+      user: newUser,
+      bank,
+      store,
+      is_verified: false,
+    } as DeepPartial<Seller>)
+    await this.sellerRepo.save(seller)
+    return {
+      success: true,
+      message: 'Seller registered successfully',
+      sellerId: seller.id,
+    }
   }
 
   // -----------------------------
