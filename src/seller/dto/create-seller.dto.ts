@@ -1,50 +1,43 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsOptional,
-  IsNumber,
-  IsBoolean,
-} from 'class-validator'
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator'
 
-export class CreateSellerDto {
+export class SellerSignupDto {
   @IsString()
   @IsNotEmpty()
-  shopName: string
+  name: string // user name
 
   @IsString()
   @IsNotEmpty()
   phone: string
 
   @IsString()
-  logo: string
-
-  @IsString()
-  banner: string
+  @IsNotEmpty()
+  password: string
 
   @IsString()
   @IsNotEmpty()
-  address: string
+  shopName: string
 
-  @IsOptional()
   @IsString()
-  metaTitle?: string
-
   @IsOptional()
+  logo?: string
+
   @IsString()
-  metaDescription?: string
-
-  @IsBoolean()
   @IsOptional()
-  is_verified?: boolean
+  banner?: string
 
-  @IsBoolean()
+  @IsString()
   @IsOptional()
-  is_banned?: boolean
+  address?: string
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  userId: number
+  bankName?: string
 
+  @IsString()
   @IsOptional()
-  bank?: any // will be validated separately
+  accountNumber?: string
+
+  @IsString()
+  @IsOptional()
+  storeSlug?: string
 }

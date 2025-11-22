@@ -11,6 +11,7 @@ import {
 
 import { User } from '@/user/model/user.entity'
 import { Bank } from './bank.entity'
+import { Store } from './store.entity'
 
 @Entity()
 export class Seller {
@@ -51,6 +52,9 @@ export class Seller {
   @OneToOne(() => User)
   @JoinColumn()
   user: Relation<User>
+  @OneToOne(() => Store, (store) => store.seller, { cascade: true })
+  @JoinColumn()
+  store: Relation<Store>
 
   @Column({ type: 'numeric', default: 0 })
   totalReview: number
