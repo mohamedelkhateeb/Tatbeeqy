@@ -31,7 +31,9 @@ import { ResetPasswordInput } from './dto/reset-password.dto'
 import { PhoneInput } from './dto/phone.dto'
 import { SearchInput } from './dto/search.dto'
 import { AdminInput } from './dto/admin.dto'
-
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+@ApiTags('User')
+@ApiBearerAuth()
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}

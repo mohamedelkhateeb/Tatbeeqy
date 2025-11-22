@@ -15,6 +15,9 @@ import { AuthGuard } from '@/auth/auth.guard'
 import { RolesGuard } from '@/auth/roles.guard'
 import { Roles } from '@/auth/decorator/auth.decorator'
 import { Role } from '@/auth/enum/auth.enum'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+@ApiTags('Platform')
+@ApiBearerAuth()
 @Roles(Role.ADMIN)
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('platform')

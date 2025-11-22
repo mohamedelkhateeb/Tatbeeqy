@@ -1,18 +1,24 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+
 import { SellerService } from './seller.service'
-import { AuthGuard } from '@/auth/auth.guard'
+import { SellerController } from './seller.controller'
 import { RolesGuard } from '@/auth/roles.guard'
-import { User } from '@/user/model/user.entity'
+
+import { SellerRepository } from './seller.repository'
 import { Seller } from './entities/seller.entity'
 import { Bank } from './entities/bank.entity'
-import { SellerController } from './seller.controller'
-import { Session } from '@/user/model/session.entity'
+
+// Import the module that contains AuthGuard, UserRepository, SessionRepository, JwtService
+import { UserModule } from '@/user/user.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Seller, Bank, User, Session])],
+  imports: [
+    UserModule, // <-- provides AuthGuard + JwtService + User/Session
+    TypeOrmModule.forFeature([SellerRepository, Seller, Bank]),
+  ],
   controllers: [SellerController],
-  providers: [SellerService],
+  providers: [SellerService, RolesGuard], // AuthGuard is already provided via UserModule
   exports: [SellerService],
 })
 export class SellerModule {}
