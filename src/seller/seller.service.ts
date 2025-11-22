@@ -37,7 +37,7 @@ export class SellerService {
   async gets(input: SearchInput) {
     const { search, limit = 10, page = 1 } = input
     return this.sellerRepo.find({
-      where: search ? [{ shopName: ILike(`%${search}%`) }] : {},
+      where: search ? [{ storeName: ILike(`%${search}%`) }] : {},
       take: limit,
       skip: (page - 1) * limit,
     })
@@ -54,7 +54,7 @@ export class SellerService {
     if (exists) throw new BadRequestException('Phone already registered')
     const passwordHash = await bcrypt.hash(input.password, 12)
     const newUser = this.userRepo.create({
-      name: input.name,
+      name: input.fullName,
       phone: input.phone,
       password: passwordHash,
       role: Role.SELLER,
@@ -66,15 +66,9 @@ export class SellerService {
     const store = this.storeRepo.create({})
     await this.storeRepo.save(store)
     const seller = this.sellerRepo.create({
-      shopName: input.shopName,
-      address: input.address,
-      logo: input.logo || '',
-      banner: input.banner || '',
       user: newUser,
-      bank,
-      store,
       is_verified: false,
-    } as DeepPartial<Seller>)
+    })
     await this.sellerRepo.save(seller)
     return {
       success: true,

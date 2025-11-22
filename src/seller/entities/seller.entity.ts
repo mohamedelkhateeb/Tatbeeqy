@@ -11,6 +11,7 @@ import {
 
 import { User } from '@/user/model/user.entity'
 import { Bank } from './bank.entity'
+import { Store } from './store.entity'
 
 @Entity()
 export class Seller {
@@ -18,7 +19,7 @@ export class Seller {
   id: string
 
   @Column({ type: 'text' })
-  shopName: string
+  storeName: string
 
   @Column({ type: 'text' })
   phone: string
@@ -63,5 +64,7 @@ export class Seller {
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date
-  store: any
+  @OneToOne(() => Store, (store) => store.seller, { cascade: true })
+  @JoinColumn()
+  store: Relation<Store>
 }
