@@ -5,20 +5,20 @@ import { SellerService } from './seller.service'
 import { SellerController } from './seller.controller'
 import { RolesGuard } from '@/auth/roles.guard'
 
-import { SellerRepository } from './seller.repository'
+// Import entities only (NOT SellerRepository)
 import { Seller } from './entities/seller.entity'
 import { Bank } from './entities/bank.entity'
+import { Store } from './entities/store.entity'
 
-// Import the module that contains AuthGuard, UserRepository, SessionRepository, JwtService
 import { UserModule } from '@/user/user.module'
 
 @Module({
   imports: [
-    UserModule, // <-- provides AuthGuard + JwtService + User/Session
-    TypeOrmModule.forFeature([SellerRepository, Seller, Bank]),
+    UserModule,
+    TypeOrmModule.forFeature([Seller, Bank, Store]), // Entities only!
   ],
   controllers: [SellerController],
-  providers: [SellerService, RolesGuard], // AuthGuard is already provided via UserModule
+  providers: [SellerService, RolesGuard],
   exports: [SellerService],
 })
 export class SellerModule {}

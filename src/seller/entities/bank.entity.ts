@@ -1,22 +1,22 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm'
 import { Seller } from './seller.entity'
 
-@Entity()
+@Entity('banks')
 export class Bank {
-  @PrimaryGeneratedColumn('identity')
+  @PrimaryGeneratedColumn('increment')
   id: number
 
-  @Column({ type: 'text' })
-  bankName: string
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  bankName: string | null
 
-  @Column({ type: 'text' })
-  accountHolder: string
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  accountHolder: string | null
 
-  @Column({ type: 'text' })
-  accountNumber: string
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  accountNumber: string | null
 
-  @Column({ type: 'text', nullable: true })
-  iban: string
+  @Column({ type: 'varchar', length: 34, nullable: true })
+  iban: string | null
 
   @OneToOne(() => Seller, (seller) => seller.bank)
   seller: Seller

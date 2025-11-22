@@ -13,58 +13,45 @@ import { User } from '@/user/model/user.entity'
 import { Bank } from './bank.entity'
 import { Store } from './store.entity'
 
-@Entity()
+@Entity('sellers')
 export class Seller {
-  @PrimaryGeneratedColumn('identity')
-  id: string
-
-  @Column({ type: 'text' })
-  storeName: string
-
-  @Column({ type: 'text' })
-  phone: string
-
-  @Column({ type: 'text' })
-  logo: string
-
-  @Column({ type: 'text' })
-  banner: string
-
-  @Column({ type: 'text' })
-  address: string
-
-  @Column({ type: 'text', nullable: true })
-  metaTitle: string
-
-  @Column({ type: 'text', nullable: true })
-  metaDescription: string
+  @PrimaryGeneratedColumn('increment')
+  id: number
 
   @Column({ type: 'boolean', default: false })
-  is_verified: boolean
+  isVerified: boolean
 
   @Column({ type: 'boolean', default: false })
-  is_banned: boolean
+  isBanned: boolean
 
-  @OneToOne(() => Bank, (bank) => bank.seller, { cascade: true })
+  @OneToOne(() => Bank, (bank) => bank.seller, {
+    cascade: true,
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn()
-  bank: Relation<Bank>
+  bank: Relation<Bank> | null
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: Relation<User>
 
-  @Column({ type: 'numeric', default: 0 })
-  totalReview: number
-
-  @Column({ type: 'numeric', default: 0 })
-  totalRating: number
-
-  @UpdateDateColumn({ type: 'timestamptz' })
-  updated_at: Date
-
-  @CreateDateColumn({ type: 'timestamptz' })
-  created_at: Date
-  @OneToOne(() => Store, (store) => store.seller, { cascade: true })
+  @OneToOne(() => Store, (store) => store.seller, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   store: Relation<Store>
+
+  @Column({ type: 'int', default: 0 })
+  totalReviews: number
+
+  @Column({ type: 'decimal', precision: 3, scale: 2, default: 0 })
+  averageRating: number
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt: Date
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt: Date
 }

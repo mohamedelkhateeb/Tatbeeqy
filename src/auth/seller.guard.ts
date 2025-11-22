@@ -23,8 +23,8 @@ export class SellerGuard implements CanActivate {
       const seller = await this.sellerRepository.findOne({
         where: {
           user: user.id,
-          is_verified: true,
-          is_banned: false,
+          isVerified: true,
+          isBanned: false,
         },
       })
       if (!seller)
