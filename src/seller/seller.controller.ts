@@ -43,7 +43,12 @@ export class SellerController {
   signup(@Body() signupInput: SellerSignupDto) {
     return this.sellerService.signup(signupInput)
   }
-
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify seller email' })
+  verifyEmail(@Body() dto: { email: string; code: string }) {
+    return this.sellerService.verifyEmail(dto.email, dto.code)
+  }
   @Get()
   @ApiOperation({ summary: 'Get all sellers (public)' })
   getAll(@Query() searchInput: SearchInput) {

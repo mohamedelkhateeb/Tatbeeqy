@@ -22,11 +22,11 @@ export async function createAdminUser(dataSource: DataSource) {
   const admin = userRepository.create({
     phone: '01000000000', // required
     name: 'Super Admin',
-    email: 'admin@nekmart.com',
+    email: 'admin@tatbeeqy.com',
     password: hashedPassword,
     role: 'admin',
-    is_verified: true,
-    is_banned: false,
+    isVerified: true,
+    isBanned: false,
   })
 
   await userRepository.save(admin)

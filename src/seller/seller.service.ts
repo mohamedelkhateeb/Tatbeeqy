@@ -5,6 +5,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+import * as speakeasy from 'speakeasy'
+
 import { Repository, ILike } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 
@@ -20,6 +22,8 @@ import { SellerSignupDto } from './dto/create-seller.dto'
 
 import { Role } from '@/auth/enum/auth.enum'
 import { CreateStoreDto, UpdateStoreDto } from './dto/store.dto'
+import { MailerService } from '@nestjs-modules/mailer'
+import { VERIFICATION_EMAIL_TEMPLATE } from '@/common/templates'
 
 @Injectable()
 export class SellerService {
@@ -32,51 +36,94 @@ export class SellerService {
     private readonly storeRepo: Repository<Store>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly mailerService: MailerService,
   ) {}
 
   async signup(input: SellerSignupDto) {
     const existingUser = await this.userRepo.findOne({
-      where: { phone: input.phone },
+      where: [{ phone: input.phone }, { email: input.email }],
+      select: ['id', 'email', 'otp', 'isVerified'],
     })
-
     if (existingUser) {
-      throw new BadRequestException('Phone number already registered')
+      if (existingUser.isVerified) {
+        throw new BadRequestException('Phone or email already registered')
+      } else {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString()
+        existingUser.otp = otp
+        await this.userRepo.save(existingUser)
+        await this.mailerService.sendMail({
+          to: existingUser.email,
+          from: `"Tatbeeqy" <${process.env.SMTP_USER}>`,
+          subject: 'Verify Your Email',
+          html: VERIFICATION_EMAIL_TEMPLATE.replace(
+            '{verificationCode}',
+            otp,
+          ).replace('{name}', existingUser.name),
+        })
+        return {
+          success: false,
+          message:
+            'Your account is not verified yet. A new verification code was sent to your email.',
+        }
+      }
     }
-
     const passwordHash = await bcrypt.hash(input.password, 12)
-
+        const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const newUser = this.userRepo.create({
       name: input.fullName,
       phone: input.phone,
       password: passwordHash,
       role: Role.SELLER,
-      is_verified: true,
+      email: input.email,
+      isVerified: false,
+      otp,
     })
     await this.userRepo.save(newUser)
-
     const seller = this.sellerRepo.create({
       user: newUser,
       isVerified: false,
     })
     await this.sellerRepo.save(seller)
+    await this.mailerService.sendMail({
+      to: input.email,
+      from: `"Tatbeeqy" <${process.env.SMTP_USER}>`,
+      subject: 'Verify Your Email',
+      html: VERIFICATION_EMAIL_TEMPLATE.replace(
+        '{verificationCode}',
+        otp,
+      ).replace('{name}', input.fullName),
+    })
 
     return {
       success: true,
       message:
-        'Seller registered successfully. Please complete your store information.',
+        'Seller registered successfully. Verification code sent to your email.',
       sellerId: seller.id,
     }
   }
 
+  async verifyEmail(email: string, code: string) {
+    const user = await this.userRepo.findOne({
+      where: { email },
+      select: ['id', 'email', 'otp', 'isVerified'],
+    })
+    if (!user) throw new NotFoundException('User not found')
+    if (user.otp !== code) {
+      throw new BadRequestException('Invalid or expired OTP')
+    }
+    user.isVerified = true
+    user.otp = null
+    await this.userRepo.save(user)
+
+    return { success: true, message: 'Email verified successfully' }
+  }
   async getAll(input: SearchInput) {
     const { search, limit = 10, page = 1 } = input
-
     const queryBuilder = this.sellerRepo
       .createQueryBuilder('seller')
       .leftJoinAndSelect('seller.store', 'store')
       .where('seller.isVerified = :isVerified', { isVerified: true })
       .andWhere('seller.isBanned = :isBanned', { isBanned: false })
-
     if (search) {
       queryBuilder.andWhere('store.storeName ILIKE :search', {
         search: `%${search}%`,

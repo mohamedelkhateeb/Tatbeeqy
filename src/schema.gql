@@ -27,8 +27,8 @@ type User {
   email: String
   avatar: String
   provider: Provider
-  is_verified: Boolean!
-  is_banned: Boolean!
+  isVerified: Boolean!
+  isBanned: Boolean!
   role: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -206,8 +206,8 @@ type Seller {
   address: String!
   metaTitle: String
   metaDescription: String
-  is_verified: Boolean!
-  is_banned: Boolean!
+  isVerified: Boolean!
+  isBanned: Boolean!
   bank: Bank
   user: User
   totalReview: Float!
@@ -652,7 +652,10 @@ type Query {
   getRefundableProducts: [Refundable!]!
   getRefundByUser: [Refund!]!
   getRefundByAdmin(searchInput: SearchInput!): GetRefund!
-  getWithdrawalByAdmin(sellerId: String!, searchInput: SearchInput!): GetWithdraw!
+  getWithdrawalByAdmin(
+    sellerId: String!
+    searchInput: SearchInput!
+  ): GetWithdraw!
   getWithdrawalBySeller(searchInput: SearchInput!): GetWithdraw!
   getIncomeHistory(searchInput: SearchInput!): GetIncomes!
   getIncomeStatics(sellerId: String!): IncomeStatics!
@@ -747,13 +750,19 @@ type Mutation {
   updateTag(id: String!, tagInput: TagInput!): SuccessInfo!
   deleteTag(id: String!): SuccessInfo!
   addMainCategory(mainCategoryInput: MainCategoryInput!): SuccessInfo!
-  updateMainCategory(mainCategoryInput: MainCategoryInput!, id: String!): SuccessInfo!
+  updateMainCategory(
+    mainCategoryInput: MainCategoryInput!
+    id: String!
+  ): SuccessInfo!
   deleteMainCategory(id: String!): SuccessInfo!
   addCategory(categoryInput: CategoryInput!): SuccessInfo!
   updateCategory(categoryInput: CategoryInput!, id: String!): SuccessInfo!
   deleteCategory(id: String!): SuccessInfo!
   addSubCategory(subCategoryInput: SubCategoryInput!): SuccessInfo!
-  updateSubCategory(id: String!, subCategoryInput: SubCategoryInput!): SuccessInfo!
+  updateSubCategory(
+    id: String!
+    subCategoryInput: SubCategoryInput!
+  ): SuccessInfo!
   deleteSubCategory(id: String!): SuccessInfo!
   addAttribute(attributeInput: AttributeInput!): SuccessInfo!
   updateAttribute(attributeInput: AttributeInput!, id: String!): SuccessInfo!
@@ -784,7 +793,10 @@ type Mutation {
   decreaseCart(id: String!): SuccessInfo!
   deleteCart(id: String!): SuccessInfo!
   addRefund(refundInput: RefundInput!): SuccessInfo!
-  changeRefundStatus(id: String!, refundStatusInput: RefundStatusInput!): SuccessInfo!
+  changeRefundStatus(
+    id: String!
+    refundStatusInput: RefundStatusInput!
+  ): SuccessInfo!
   releasePayment(paymentInput: ReleasePaymentInput!): SuccessInfo!
   confirmPayment(withdrawId: String!): SuccessInfo!
   addPlatform(platformInput: PlatformInput!): SuccessInfo!
@@ -806,7 +818,9 @@ type Mutation {
   deleteSection(id: String!): SuccessInfo!
   addProduct(productInput: ProductInput!): SuccessInfo!
   updateProduct(productInput: ProductInput!, id: String!): SuccessInfo!
-  updateFlashProduct(updateFlashProductInput: UpdateFlashProductInput!): SuccessInfo!
+  updateFlashProduct(
+    updateFlashProductInput: UpdateFlashProductInput!
+  ): SuccessInfo!
   changeProductVisibility(id: String!, visibility: Boolean!): SuccessInfo!
   approvedProduct(id: String!, approved: Boolean!): SuccessInfo!
   deleteProduct(id: String!): SuccessInfo!
@@ -814,7 +828,10 @@ type Mutation {
   addWishlist(wishlistInput: WishlistInput!): SuccessInfo!
   deleteWishlist(id: String!): SuccessInfo!
   addPreorder(preorderInput: PreorderInput!): SuccessInfo!
-  updatePreorderNote(preorderNoteInput: PreorderNoteInput!, id: String!): SuccessInfo!
+  updatePreorderNote(
+    preorderNoteInput: PreorderNoteInput!
+    id: String!
+  ): SuccessInfo!
   deletePreorder(id: String!): SuccessInfo!
   addReviews(reviewInput: ReviewInput!): SuccessInfo!
   replyReview(replyInput: ReplyInput!): SuccessInfo!

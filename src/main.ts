@@ -22,8 +22,8 @@ async function bootstrap() {
 
   // Swagger
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Nekmart API')
-    .setDescription('Nekmart Multi-Vendor REST API')
+    .setTitle('Tatbeeqy API')
+    .setDescription('Tatbeeqy Multi-Vendor REST API')
     .setVersion('1.0')
     .addBearerAuth()
     .build()

@@ -45,10 +45,10 @@ export class User {
   provider?: { name: string; id: string }
 
   @Column({ type: 'boolean', default: false })
-  is_verified: boolean
+  isVerified: boolean
 
   @Column({ type: 'boolean', default: false })
-  is_banned: boolean
+  isBanned: boolean
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date

@@ -9,6 +9,7 @@ import {
   Query,
   Req,
   UseGuards,
+  HttpCode,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { UserService } from './user.service'
@@ -34,7 +35,7 @@ import { AdminInput } from './dto/admin.dto'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 @ApiTags('User')
 @ApiBearerAuth()
-@Controller('users')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -46,18 +47,9 @@ export class UserController {
   }
 
   @Post('login')
+  @HttpCode(200)
   login(@Body() loginInput: LoginInput, @Req() req: Request) {
     return this.userService.login(loginInput, req)
-  }
-
-  @Post('login/admin')
-  adminLogin(@Body() loginInput: LoginInput, @Req() req: Request) {
-    return this.userService.adminLogin(loginInput, req)
-  }
-
-  @Post('login/seller')
-  sellerLogin(@Body() loginInput: LoginInput, @Req() req: Request) {
-    return this.userService.sellerLogin(loginInput, req)
   }
 
   @Post('google')

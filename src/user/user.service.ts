@@ -1,16 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import * as speakeasy from 'speakeasy'
 import { OAuth2Client, LoginTicket } from 'google-auth-library'
 import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
-import { catchError, firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
-import { AxiosError } from 'axios'
 import { Request } from 'express'
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
+import { MailerService } from '@nestjs-modules/mailer'
 
 //Config Service
 const configService = new ConfigService()
@@ -53,6 +56,8 @@ export class UserService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Session) private sessionRepository: Repository<Session>,
     private readonly httpService: HttpService,
+    private readonly mailService: MailerService,
+
     private readonly jwtService: JwtService,
     private readonly smsService: SmsService,
   ) {}
@@ -61,7 +66,7 @@ export class UserService {
   async getProfile(reqUser: ReqUser) {
     const user = await this.userRepository.findOneBy({
       id: reqUser.id,
-      is_verified: true,
+      isVerified: true,
     })
     return user
   }
@@ -71,7 +76,7 @@ export class UserService {
     const users = await this.userRepository
       .createQueryBuilder('user')
       .orderBy('user.created_at', searchInput.orderBy ?? 'DESC')
-      .where('user.is_verified = :isVerified AND user.role = :role', {
+      .where('user.isVerified = :isVerified AND user.role = :role', {
         isVerified: true,
         role: 'user',
       })
@@ -98,7 +103,7 @@ export class UserService {
     const users = await this.userRepository
       .createQueryBuilder('user')
       .orderBy('user.created_at', searchInput.orderBy ?? 'DESC')
-      .where('user.is_verified = :isVerified', { isVerified: true })
+      .where('user.isVerified = :isVerified', { isVerified: true })
       .andWhere('user.role IN (:...roles)', {
         roles: ['editor', 'moderator', 'admin'],
       })
@@ -120,64 +125,67 @@ export class UserService {
     }
   }
 
-  //Signup
   async signup(signupInput: SignupInput) {
-    const user = await this.userRepository.findOneBy({
-      phone: signupInput.phone,
-      is_verified: true,
+    const existingUser = await this.userRepository.findOneBy({
+      email: signupInput.email,
     })
-    if (user) throw new NotFoundException('User already registered!')
-    await this.userRepository.delete({
-      phone: signupInput.phone,
-      is_verified: false,
-    })
+    if (existingUser) {
+      throw new NotFoundException('User already registered!')
+    }
     const secret = speakeasy.generateSecret({ length: 20 })
-    // const otp = speakeasy.totp({
-    //   secret: secret.base32,
-    //   encoding: 'base32',
-    // })
-    const otp = "1234"
-    // const smsData = await this.smsService.sendOtp(`+${signupInput.phone}`, otp)
-
-    // const { data } = await firstValueFrom(
-    //   this.httpService.post('http://api.greenweb.com.bd/api.php', smsData).pipe(
-    //     catchError((error: AxiosError) => {
-    //       throw new NotFoundException('Something Went Wrong!')
-    //     }),
-    //   ),
-    // )
-    // if (!data.toString().includes('Ok:'))
-    //   throw new NotFoundException(data.toString())
-    console.log(otp)
+    const otp = Math.floor(1000 + Math.random() * 9000).toString() // 4-digit OTP
     const passwordHash = await bcrypt.hash(signupInput.password, 12)
     const newUser = this.userRepository.create({
       ...signupInput,
       password: passwordHash,
       otp: secret.base32,
+      isVerified: false,
     })
     await this.userRepository.save(newUser)
+    const htmlMessage = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+        <h2 style="color: #333;">Welcome to Ecommerce-Nest.JS!</h2>
+        <p>Hi <strong>${signupInput.name}</strong>,</p>
+        <p>Thank you for registering. Please verify your email using the code below:</p>
+        <h1 style="color: #FF4C4C; text-align: center;">${otp}</h1>
+        <p style="font-size: 12px; color: #888;">
+          If you did not sign up, please ignore this email.
+        </p>
+        <hr>
+        <p style="font-size: 12px;">Ecommerce-Nest.JS Team</p>
+      </div>
+    `
+
+    await this.mailService.sendMail({
+      from: `Ecommerce-Nest.JS <${process.env.SMTP_USER}>`,
+      to: signupInput.email,
+      subject: `Verify your email - Ecommerce-Nest.JS`,
+      html: htmlMessage,
+    })
+
+    console.log('OTP for debugging:', otp)
+
     return {
       success: true,
-      message: 'Code sent to your phone successfully!',
+      message: 'Verification code sent to your email successfully!',
     }
   }
-
   //Add Admins
   async addAdmin(adminInput: AdminInput) {
     const user = await this.userRepository.findOneBy({
       phone: adminInput.phone,
-      is_verified: true,
+      isVerified: true,
     })
     if (user) throw new NotFoundException('User already registered!')
     await this.userRepository.delete({
       phone: adminInput.phone,
-      is_verified: false,
+      isVerified: false,
     })
     const passwordHash = await bcrypt.hash(adminInput.password, 12)
     const newUser = this.userRepository.create({
       ...adminInput,
       password: passwordHash,
-      is_verified: true,
+      isVerified: true,
     })
     await this.userRepository.save(newUser)
     return {
@@ -284,7 +292,7 @@ export class UserService {
       sameSite: 'none',
       path: '/',
     })
-    await this.userRepository.update(user.id, { is_verified: true, otp: null })
+    await this.userRepository.update(user.id, { isVerified: true, otp: null })
     return {
       success: true,
       message: 'User registered successfully!',
@@ -293,58 +301,50 @@ export class UserService {
 
   //Login with phone or password
   async login(loginInput: LoginInput, req: Request) {
-    console.log(loginInput)
-
-    const user = await this.userRepository.findOne({
-      where: [{ email: loginInput.phoneOrEmail }],
-      select: ['id', 'phone', 'password'],
-    })
-    if (!user) throw new NotFoundException('Wrong email or password!')
-    const verifyPass = await bcrypt.compare(loginInput.password, user.password)
-    if (!verifyPass) throw new NotFoundException('Wrong email or password!')
-    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
-    const session = await this.sessionRepository.create({
-      cookie: token,
-      user: { id: user.id },
-    })
-    await this.sessionRepository.save(session)
-    req.res.cookie('9717f25d01fb469d5d6a3c6c70e1919aebec', token, {
-      maxAge: 90 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-    })
-    return {
-      success: true,
-      message: 'User login successfully!',
-    }
-  }
-
-  //Login with email and password for admin
-  async adminLogin(loginInput: LoginInput, req: Request) {
+    // 1️⃣ Find user by email or phone
     const user = await this.userRepository.findOne({
       where: [
-        { phone: loginInput.phoneOrEmail },
         { email: loginInput.phoneOrEmail },
+        { phone: loginInput.phoneOrEmail },
       ],
-      select: ['id', 'phone', 'password', 'role'],
+      select: [
+        'id',
+        'phone',
+        'password',
+        'role',
+        'isBanned',
+        'email',
+        'isVerified',
+        'name',
+        'avatar',
+        'provider',
+      ],
     })
-    if (!user) throw new NotFoundException('Wrong email or password!')
-    if (user.role === 'user' || user.role === 'seller')
-      throw new NotFoundException("You can't login here!")
 
+    if (!user) {
+      throw new NotFoundException('Wrong email or password!')
+    }
     const verifyPass = await bcrypt.compare(loginInput.password, user.password)
-    if (!verifyPass) throw new NotFoundException('Wrong email or password!')
+    if (!verifyPass) {
+      throw new NotFoundException('Wrong email or password!')
+    }
+    if (!user.isVerified) {
+      throw new BadRequestException(
+        'Your email is not verified! Please check your inbox.',
+      )
+    }
+    if (user.isBanned) {
+      throw new BadRequestException('Your account is banned.')
+    }
     const token = this.jwtService.sign({ phone: user.phone, id: user.id })
-    const session = await this.sessionRepository.create({
+    const session = this.sessionRepository.create({
       cookie: token,
       user: { id: user.id },
     })
-    console.log(loginInput)
     await this.sessionRepository.save(session)
-    req.res.cookie('9717f25d01fb469d5d6a3c6c70e1919aebec', token, {
-      maxAge: 90 * 24 * 60 * 60 * 1000,
+
+    req.res.cookie('auth_token', token, {
+      maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
       httpOnly: true,
       secure: true,
       sameSite: 'none',
@@ -352,43 +352,21 @@ export class UserService {
     })
     return {
       success: true,
-      message: 'Admin login successfully!',
+      message: 'User logged in successfully!',
+      data: {
+        user: {
+          id: user.id,
+          name: user.name,
+          phone: user.phone,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          provider: user.provider,
+        },
+        token,
+      },
     }
   }
-
-  //Login with phone and password for seller
-  async sellerLogin(loginInput: LoginInput, req: Request) {
-    const user = await this.userRepository.findOne({
-      where: [
-        { phone: loginInput.phoneOrEmail },
-        { email: loginInput.phoneOrEmail },
-      ],
-      select: ['id', 'phone', 'password', 'role'],
-    })
-    if (!user) throw new NotFoundException('Wrong email or password!')
-    if (user.role !== 'seller')
-      throw new NotFoundException("You can't login here!")
-    const verifyPass = await bcrypt.compare(loginInput.password, user.password)
-    if (!verifyPass) throw new NotFoundException('Wrong email or password!')
-    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
-    const session = await this.sessionRepository.create({
-      cookie: token,
-      user: { id: user.id },
-    })
-    await this.sessionRepository.save(session)
-    req.res.cookie('9717f25d01fb469d5d6a3c6c70e1919aebec', token, {
-      maxAge: 90 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-    })
-    return {
-      success: true,
-      message: 'Seller login successfully!',
-    }
-  }
-
   //Login or signup with google service
   async google({ code, idToken }: GoogleInput, req: Request) {
     if (code && idToken)
@@ -426,7 +404,7 @@ export class UserService {
       const newUser = this.userRepository.create({
         name: payload.name,
         email: payload.email,
-        is_verified: true,
+        isVerified: true,
         avatar: payload.picture,
         provider: {
           name: payload.iss,
@@ -477,7 +455,7 @@ export class UserService {
   //       name: data.name,
   //       email: data.id,
   //       avatar: data.picture.data.url,
-  //       is_verified: true,
+  //       isVerified: true,
   //       provider: {
   //         name: 'graph.facebook.com',
   //         id: data.id,
@@ -680,7 +658,7 @@ export class UserService {
   //Delete User
   async ban(id: string, status: boolean) {
     const result = await this.userRepository.update(id, {
-      is_banned: status,
+      isBanned: status,
     })
     if (result.affected === 0) throw new NotFoundException('User not found!')
     return {
@@ -692,7 +670,7 @@ export class UserService {
   //Remove Admin
   async remove(id: string) {
     const result = await this.userRepository.update(id, {
-      is_banned: true,
+      isBanned: true,
       role: 'user',
     })
     if (result.affected === 0) throw new NotFoundException('User not found!')

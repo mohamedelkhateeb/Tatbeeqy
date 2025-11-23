@@ -12,8 +12,8 @@ export class User {
   email?: string
   avatar?: string
   provider?: Provider
-  is_verified: boolean
-  is_banned: boolean
+  isVerified: boolean
+  isBanned: boolean
   role: string
   created_at: Date
   updated_at: Date
