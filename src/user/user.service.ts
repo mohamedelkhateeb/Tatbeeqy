@@ -55,11 +55,8 @@ export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Session) private sessionRepository: Repository<Session>,
-    private readonly httpService: HttpService,
     private readonly mailService: MailerService,
-
     private readonly jwtService: JwtService,
-    private readonly smsService: SmsService,
   ) {}
 
   //Get Profile

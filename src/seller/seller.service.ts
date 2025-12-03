@@ -24,6 +24,9 @@ import { Role } from '@/auth/enum/auth.enum'
 import { CreateStoreDto, UpdateStoreDto } from './dto/store.dto'
 import { MailerService } from '@nestjs-modules/mailer'
 import { VERIFICATION_EMAIL_TEMPLATE } from '@/common/templates'
+import { JwtService } from '@nestjs/jwt'
+import { Session } from '@/user/model/session.entity'
+import { Request } from 'express'
 
 @Injectable()
 export class SellerService {
@@ -37,6 +40,9 @@ export class SellerService {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly mailerService: MailerService,
+    private readonly jwtService: JwtService,
+    @InjectRepository(Session)
+    private readonly sessionRepository: Repository<Session>,
   ) {}
 
   async signup(input: SellerSignupDto) {
@@ -68,7 +74,7 @@ export class SellerService {
       }
     }
     const passwordHash = await bcrypt.hash(input.password, 12)
-        const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const newUser = this.userRepo.create({
       name: input.fullName,
       phone: input.phone,
@@ -102,7 +108,7 @@ export class SellerService {
     }
   }
 
-  async verifyEmail(email: string, code: string) {
+  async verifyEmail(email: string, code: string, req: Request) {
     const user = await this.userRepo.findOne({
       where: { email },
       select: ['id', 'email', 'otp', 'isVerified'],
@@ -115,7 +121,26 @@ export class SellerService {
     user.otp = null
     await this.userRepo.save(user)
 
-    return { success: true, message: 'Email verified successfully' }
+    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
+    const session = this.sessionRepository.create({
+      cookie: token,
+      user: { id: user.id },
+    })
+    await this.sessionRepository.save(session)
+
+    req.res.cookie('auth_token', token, {
+      maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+    })
+
+    return {
+      success: true,
+      message: 'Email verified successfully',
+      data: { userId: user.id, token },
+    }
   }
   async getAll(input: SearchInput) {
     const { search, limit = 10, page = 1 } = input
@@ -297,6 +322,8 @@ export class SellerService {
   // ============================================
 
   async createStore(input: CreateStoreDto, reqUser: ReqUser) {
+    console.log(reqUser);
+    
     const seller = await this.sellerRepo.findOne({
       where: { user: { id: reqUser.id } },
       relations: ['store'],

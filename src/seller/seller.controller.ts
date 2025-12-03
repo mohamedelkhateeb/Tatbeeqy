@@ -46,8 +46,8 @@ export class SellerController {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify seller email' })
-  verifyEmail(@Body() dto: { email: string; code: string }) {
-    return this.sellerService.verifyEmail(dto.email, dto.code)
+  verifyEmail(@Body() dto: { email: string; code: string }, @Req() req) {
+    return this.sellerService.verifyEmail(dto.email, dto.code, req)
   }
   @Get()
   @ApiOperation({ summary: 'Get all sellers (public)' })
@@ -70,7 +70,7 @@ export class SellerController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get seller profile' })
   getProfile(@Req() req) {
-    return this.sellerService.getProfile(req.user)
+    return this.sellerService.getProfile(req)
   }
 
   @Get(':id')
@@ -120,7 +120,7 @@ export class SellerController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Add/update bank information' })
   addOrUpdateBank(@Body() bankInput: BankInput, @Req() req) {
-    return this.sellerService.addOrUpdateBank(bankInput, req.user)
+    return this.sellerService.addOrUpdateBank(bankInput, req)
   }
 
   // ============================================
@@ -129,12 +129,12 @@ export class SellerController {
 
   @Post('store')
   @Roles(Role.SELLER)
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create store information' })
   createStore(@Body() createStoreDto: CreateStoreDto, @Req() req) {
-    return this.sellerService.createStore(createStoreDto, req.user)
+    return this.sellerService.createStore(createStoreDto, req)
   }
 
   @Get('store/me')
@@ -143,7 +143,7 @@ export class SellerController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my store information' })
   getMyStore(@Req() req) {
-    return this.sellerService.getMyStore(req.user)
+    return this.sellerService.getMyStore(req)
   }
 
   @Patch('store')
@@ -152,7 +152,7 @@ export class SellerController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update store information' })
   updateStore(@Body() updateStoreDto: UpdateStoreDto, @Req() req) {
-    return this.sellerService.updateStore(updateStoreDto, req.user)
+    return this.sellerService.updateStore(updateStoreDto, req)
   }
 
   @Get('store/:sellerId')

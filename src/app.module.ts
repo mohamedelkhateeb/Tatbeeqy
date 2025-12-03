@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { UserModule } from './user/user.module'
 import { PlatformModule } from './platform/platform.module'
 import { SellerModule } from './seller/seller.module'
+import { CategoryModule } from './category/category.module'
 // import { CategoryModule } from './category/category.module'
 // import { BrandModule } from './brand/brand.module'
 // import { TagModule } from './tag/tag.module'
@@ -51,7 +52,7 @@ import { SellerModule } from './seller/seller.module'
     UserModule,
     // BrandModule,
     // TagModule,
-    // CategoryModule,
+    CategoryModule,
     // AttributeModule,
     // CouponModule,
     // PaymentModule,

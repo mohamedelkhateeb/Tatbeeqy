@@ -36,7 +36,7 @@ async function bootstrap() {
   await createAdminUser(dataSource)
 
   const port = configService.get<number>('PORT') || 3000
-  await app.listen(port)
+  await app.listen(3000, '0.0.0.0') // 👈 important
 
   console.log(`🚀 Server running on http://localhost:${port}/api/v1`)
   console.log(`📘 Swagger docs: http://localhost:${port}/api/docs`)

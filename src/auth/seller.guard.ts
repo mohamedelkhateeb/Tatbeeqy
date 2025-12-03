@@ -11,15 +11,19 @@ import { Repository } from 'typeorm'
 
 @Injectable()
 export class SellerGuard implements CanActivate {
-  //Constructor
   constructor(
-    @InjectRepository(Seller) private sellerRepository: Repository<Seller>,
+    @InjectRepository(Seller)
+    private sellerRepository: Repository<Seller>,
   ) {}
 
-  //Can activate
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const { user } = context.switchToHttp().getNext()
+      const request = context.switchToHttp().getRequest()
+      const user = request.user
+      
+      if (!user) {
+        throw new HttpException('Unauthorized Request', HttpStatus.UNAUTHORIZED)
+      }
       const seller = await this.sellerRepository.findOne({
         where: {
           user: user.id,
@@ -27,8 +31,9 @@ export class SellerGuard implements CanActivate {
           isBanned: false,
         },
       })
-      if (!seller)
+      if (!seller) {
         throw new HttpException('Unauthorized Request', HttpStatus.UNAUTHORIZED)
+      }
       return true
     } catch {
       throw new HttpException('Unauthorized Request', HttpStatus.UNAUTHORIZED)
