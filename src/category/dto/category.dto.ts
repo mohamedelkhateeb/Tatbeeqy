@@ -1,20 +1,31 @@
-import { InputType, Field } from '@nestjs/graphql'
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator'
 
-@InputType()
-export class CategoryInput {
-  @Field(() => String, { nullable: false })
+export class CreateCategoryDto {
+  @ApiProperty({
+    type: String,
+    description: 'The name of the category',
+    example: 'Electronics',
+  })
   @IsString()
   @IsNotEmpty()
   name: string
 
-  @Field(() => String, { nullable: true })
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Image URL of the category',
+    example: 'https://example.com/image.jpg',
+  })
   @IsString()
   @IsOptional()
-  image: string
+  image?: string
 
-  @Field(() => String, { nullable: false })
-  @IsString()
+  @ApiProperty({
+    type: Number,
+    description: 'ID of the main category this category belongs to',
+    example: 4,
+  })
+  @IsNumber()
   @IsNotEmpty()
   main_category: number
 }

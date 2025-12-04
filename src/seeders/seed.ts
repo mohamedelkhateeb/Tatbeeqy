@@ -8,13 +8,10 @@ import { dataSourceOptions } from '@/typeorm.config'
 const seed = async () => {
   const dataSource = new DataSource(dataSourceOptions)
   await dataSource.initialize()
-
   console.log('🚀 Running Seeder...')
-
   await mainCategorySeeder(dataSource)
   await categorySeeder(dataSource)
   await subCategorySeeder(dataSource)
-
   console.log('✅ Seeding Completed')
   process.exit(0)
 }

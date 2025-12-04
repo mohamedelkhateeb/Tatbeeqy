@@ -14,9 +14,9 @@ import {
 import { CategoryService } from './category.service'
 
 // DTOs
-import { MainCategoryInput } from './dto/main-category.dto'
-import { CategoryInput } from './dto/category.dto'
-import { SubCategoryInput } from './dto/sub-category.dto'
+import { CreateMainCategoryDto } from './dto/main-category.dto'
+import { CreateCategoryDto } from './dto/category.dto'
+import { CreateSubCategoryDto } from './dto/sub-category.dto'
 import { SearchInput } from '@/user/dto/search.dto'
 
 // Guards
@@ -24,7 +24,8 @@ import { AuthGuard } from '@/auth/auth.guard'
 import { RolesGuard } from '@/auth/roles.guard'
 import { Roles } from '@/auth/decorator/auth.decorator'
 import { Role } from '@/auth/enum/auth.enum'
-
+import { ApiTags } from '@nestjs/swagger'
+@ApiTags('Category')
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -49,7 +50,7 @@ export class CategoryController {
   @Post('main')
   @Roles(Role.MODERATOR, Role.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
-  addMainCategory(@Body() mainCategoryInput: MainCategoryInput) {
+  addMainCategory(@Body() mainCategoryInput: CreateMainCategoryDto) {
     return this.categoryService.addMain(mainCategoryInput)
   }
 
@@ -59,7 +60,7 @@ export class CategoryController {
   @UseGuards(AuthGuard, RolesGuard)
   updateMainCategory(
     @Param('id') id: number,
-    @Body() mainCategoryInput: MainCategoryInput,
+    @Body() mainCategoryInput: CreateMainCategoryDto,
   ) {
     return this.categoryService.updateMain(mainCategoryInput, id)
   }
@@ -77,38 +78,38 @@ export class CategoryController {
   // ===========================
 
   // GET all categories
-  @Get()
+  @Get('sub-main')
   getCategories(@Query() searchInput: SearchInput) {
     return this.categoryService.categories(searchInput)
   }
 
   // GET single category
-  @Get(':id')
+  @Get('sub-main/:id')
   getCategory(@Param('id') id: number) {
     return this.categoryService.category(id)
   }
 
   // CREATE category
-  @Post()
+  @Post('sub-main')
   @Roles(Role.MODERATOR, Role.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
-  addCategory(@Body() categoryInput: CategoryInput) {
+  addCategory(@Body() categoryInput: CreateCategoryDto) {
     return this.categoryService.addCategory(categoryInput)
   }
 
   // UPDATE category
-  @Put(':id')
+  @Put('sub-main:id')
   @Roles(Role.MODERATOR, Role.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   updateCategory(
     @Param('id') id: number,
-    @Body() categoryInput: CategoryInput,
+    @Body() categoryInput: CreateCategoryDto,
   ) {
     return this.categoryService.updateCategory(categoryInput, id)
   }
 
   // DELETE category
-  @Delete(':id')
+  @Delete('sub-main:id')
   @Roles(Role.MODERATOR, Role.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   deleteCategory(@Param('id') id: number) {
@@ -135,7 +136,7 @@ export class CategoryController {
   @Post('sub')
   @Roles(Role.MODERATOR, Role.ADMIN)
   @UseGuards(AuthGuard, RolesGuard)
-  createSubCategory(@Body() subCategoryInput: SubCategoryInput) {
+  createSubCategory(@Body() subCategoryInput: CreateSubCategoryDto) {
     return this.categoryService.createSub(subCategoryInput)
   }
 
@@ -145,7 +146,7 @@ export class CategoryController {
   @UseGuards(AuthGuard, RolesGuard)
   updateSubCategory(
     @Param('id') id: number,
-    @Body() subCategoryInput: SubCategoryInput,
+    @Body() subCategoryInput: CreateSubCategoryDto,
   ) {
     return this.categoryService.updateSub(id, subCategoryInput)
   }

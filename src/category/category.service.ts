@@ -9,9 +9,9 @@ import { Category } from './entities/category.entity'
 import { SubCategory } from './entities/sub-category.entity'
 
 //Dto
-import { MainCategoryInput } from './dto/main-category.dto'
-import { CategoryInput } from './dto/category.dto'
-import { SubCategoryInput } from './dto/sub-category.dto'
+import { CreateMainCategoryDto } from './dto/main-category.dto'
+import { CreateCategoryDto } from './dto/category.dto'
+import { CreateSubCategoryDto } from './dto/sub-category.dto'
 import { SearchInput } from '@/user/dto/search.dto'
 
 @Injectable()
@@ -29,25 +29,26 @@ export class CategoryService {
   //-----------------------Main Category -------------------------------------//
   //Get all main category
   async mainCategories(searchInput: SearchInput) {
-    const mains = await this.mainRepository
+    const mains = this.mainRepository
       .createQueryBuilder('main')
-      .leftJoinAndSelect('main.category', 'category')
-      .leftJoinAndSelect('category.sub_category', 'sub_category')
-      .orderBy('main.created_at', searchInput.orderBy ?? 'DESC')
-
+      .select(['main.id', 'main.name', 'main.image'])
+    // .leftJoinAndSelect('main.category', 'category')
+    // .leftJoinAndSelect('category.sub_category', 'sub_category')
+    // .orderBy('main.created_at', searchInput.orderBy ?? 'DESC')
     if (searchInput.search) {
       mains.where('LOWER(main.name) LIKE :search', {
         search: `%${searchInput.search.toLowerCase()}%`,
       })
     }
-
     const { items, meta } = await paginate<MainCategory>(mains, {
       page: searchInput.page,
       limit: searchInput.limit,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
     return {
-      results: items,
+      message: 'Main categories fetched successfully',
+      data: items,
+      success: true,
       meta,
     }
   }
@@ -60,11 +61,15 @@ export class CategoryService {
       },
     })
     if (!main) throw new NotFoundException('Main category not found!')
-    return main
+    return {
+      message: 'Main category fetched successfully',
+      data: main,
+      success: true,
+    }
   }
 
   //Add main category
-  async addMain(mainCategoryInput: MainCategoryInput) {
+  async addMain(mainCategoryInput: CreateMainCategoryDto) {
     const main = await this.mainRepository.findOneBy({
       name: mainCategoryInput.name,
     })
@@ -78,7 +83,7 @@ export class CategoryService {
   }
 
   //Update main category
-  async updateMain(mainCategoryInput: MainCategoryInput, id: number) {
+  async updateMain(mainCategoryInput: CreateMainCategoryDto, id: number) {
     const main = await this.mainRepository.findOneBy({
       id,
     })
@@ -119,22 +124,23 @@ export class CategoryService {
   async categories(searchInput: SearchInput) {
     const categories = await this.categoryRepository
       .createQueryBuilder('category')
-      .leftJoinAndSelect('category.main_category', 'main_category')
-      .orderBy('category.created_at', searchInput.orderBy ?? 'DESC')
-
+      .select(['category.id', 'category.name', 'category.image'])
+    // .leftJoinAndSelect('category.main_category', 'main_category')
+    // .orderBy('category.created_at', searchInput.orderBy ?? 'DESC')
     if (searchInput.search) {
       categories.where('LOWER(category.name) LIKE :search', {
         search: `%${searchInput.search.toLowerCase()}%`,
       })
     }
-
     const { items, meta } = await paginate<Category>(categories, {
       page: searchInput.page,
       limit: searchInput.limit,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
     return {
-      results: items,
+      data: items,
+      success: true,
+      message: 'Categories fetched successfully',
       meta,
     }
   }
@@ -154,7 +160,7 @@ export class CategoryService {
   }
 
   //Add Category
-  async addCategory(categoryInput: CategoryInput) {
+  async addCategory(categoryInput: CreateCategoryDto) {
     const category = await this.categoryRepository.findOne({
       where: {
         name: categoryInput.name,
@@ -174,7 +180,7 @@ export class CategoryService {
   }
 
   //Update category
-  async updateCategory(categoryInput: CategoryInput, id: number) {
+  async updateCategory(categoryInput: CreateCategoryDto, id: number) {
     const category = await this.categoryRepository.findOneBy({
       id,
     })
@@ -218,8 +224,9 @@ export class CategoryService {
   async getSubs(searchInput: SearchInput) {
     const subs = await this.subRepository
       .createQueryBuilder('sub')
-      .leftJoinAndSelect('sub.category', 'category')
-      .orderBy('sub.created_at', searchInput.orderBy ?? 'DESC')
+      .select(['sub.id', 'sub.name', 'sub.image'])
+    // .leftJoinAndSelect('sub.category', 'category')
+    // .orderBy('sub.created_at', searchInput.orderBy ?? 'DESC')
 
     if (searchInput.search) {
       subs.where('LOWER(sub.name) LIKE :search', {
@@ -233,7 +240,9 @@ export class CategoryService {
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
     return {
-      results: items,
+      data: items,
+      success: true,
+      message: 'Sub-categories fetched successfully',
       meta,
     }
   }
@@ -253,7 +262,7 @@ export class CategoryService {
   }
 
   //Add sub category
-  async createSub(subCategoryInput: SubCategoryInput) {
+  async createSub(subCategoryInput: CreateSubCategoryDto) {
     const sub = await this.subRepository.findOne({
       where: {
         name: subCategoryInput.name,
@@ -273,7 +282,7 @@ export class CategoryService {
   }
 
   //Update sub category
-  async updateSub(id: number, subCategoryInput: SubCategoryInput) {
+  async updateSub(id: number, subCategoryInput: CreateSubCategoryDto) {
     const sub = await this.subRepository.findOneBy({
       id,
     })

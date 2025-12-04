@@ -3,7 +3,7 @@ import { AppModule } from './app.module'
 import { ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DataSource } from 'typeorm'
-import { createAdminUser } from './helper/admin-seeder'
+import { createAdminUser } from './seeders/admin-seeder'
 import * as cookieParser from 'cookie-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
