@@ -276,10 +276,14 @@ export class UserService {
       window: 10,
     })
     if (!validOtp) throw new NotFoundException('You use wrong code!')
-    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
+    const token = this.jwtService.sign({
+      phone: user.phone,
+      id: user.id,
+      role: user.role,
+    })
     const session = await this.sessionRepository.create({
       cookie: token,
-      user: { id: user.id },
+      user: { id: user.id, role: user.role, name: user.name },
     })
     await this.sessionRepository.save(session)
     req.res.cookie('9717f25d01fb469d5d6a3c6c70e1919aebec', token, {
@@ -333,10 +337,14 @@ export class UserService {
     if (user.isBanned) {
       throw new BadRequestException('Your account is banned.')
     }
-    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
+    const token = this.jwtService.sign({
+      phone: user.phone,
+      id: user.id,
+      role: user.role,
+    })
     const session = this.sessionRepository.create({
       cookie: token,
-      user: { id: user.id },
+      user: { id: user.id, role: user.role, name: user.name },
     })
     await this.sessionRepository.save(session)
 

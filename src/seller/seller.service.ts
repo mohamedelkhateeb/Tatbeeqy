@@ -121,7 +121,11 @@ export class SellerService {
     user.otp = null
     await this.userRepo.save(user)
 
-    const token = this.jwtService.sign({ phone: user.phone, id: user.id })
+    const token = this.jwtService.sign({
+      phone: user.phone,
+      id: user.id,
+      role: user.role,
+    })
     const session = this.sessionRepository.create({
       cookie: token,
       user: { id: user.id },
@@ -322,8 +326,8 @@ export class SellerService {
   // ============================================
 
   async createStore(input: CreateStoreDto, reqUser: ReqUser) {
-    console.log(reqUser);
-    
+    console.log(reqUser)
+
     const seller = await this.sellerRepo.findOne({
       where: { user: { id: reqUser.id } },
       relations: ['store'],
