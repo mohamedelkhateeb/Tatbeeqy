@@ -11,6 +11,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Put,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger'
 
@@ -143,16 +144,16 @@ export class SellerController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my store information' })
   getMyStore(@Req() req) {
-    return this.sellerService.getMyStore(req)
+    return this.sellerService.getMyStore(req.user)
   }
 
-  @Patch('store')
+  @Put('store')
   @Roles(Role.SELLER)
   @UseGuards(AuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update store information' })
   updateStore(@Body() updateStoreDto: UpdateStoreDto, @Req() req) {
-    return this.sellerService.updateStore(updateStoreDto, req)
+    return this.sellerService.updateStore(updateStoreDto, req.user)
   }
 
   @Get('store/:sellerId')

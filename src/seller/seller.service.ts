@@ -67,7 +67,7 @@ export class SellerService {
           ).replace('{name}', existingUser.name),
         })
         return {
-          status: 'success',
+          success: true,
           data: null,
           message:
             'Your account is not verified yet. A new verification code was sent to your email.',
@@ -144,7 +144,7 @@ export class SellerService {
       path: '/',
     })
     return {
-      status: 'success',
+      success: true,
       message: 'Email verified successfully',
       data: { userId: user.id, token },
     }
@@ -167,7 +167,7 @@ export class SellerService {
       .orderBy('seller.createdAt', 'DESC')
       .getManyAndCount()
     return {
-      status: 'success',
+      success: true,
       message: 'Sellers fetched successfully',
       data: sellers,
       meta: {
@@ -221,7 +221,7 @@ export class SellerService {
     return {
       data: seller,
       message: 'Seller fetched successfully',
-      status: 'success',
+      success: true,
     }
   }
 
@@ -236,7 +236,7 @@ export class SellerService {
     return {
       data: seller,
       message: 'Seller fetched successfully',
-      status: 'success',
+      success: true,
     }
   }
 
@@ -251,7 +251,7 @@ export class SellerService {
     return {
       data: seller,
       message: 'Seller fetched successfully',
-      status: 'success',
+      success: true,
     }
   }
 
@@ -312,7 +312,7 @@ export class SellerService {
       await this.sellerRepo.save(seller)
     }
     return {
-      status: 'success',
+      success: true,
       message: 'Bank information updated successfully',
       data: seller.bank,
     }
@@ -323,7 +323,6 @@ export class SellerService {
   // ============================================
 
   async createStore(input: CreateStoreDto, reqUser: ReqUser) {
-    console.log(reqUser)
     const seller = await this.sellerRepo.findOne({
       where: { user: { id: reqUser.id } },
       relations: ['store'],
@@ -332,19 +331,15 @@ export class SellerService {
       throw new NotFoundException('Seller not found')
     }
 
-    console.log(seller);
-    
     if (seller.store) {
-      throw new BadRequestException(
-        'Store already exists. Use update endpoint instead.',
-      )
+      throw new BadRequestException('Store already exists')
     }
     const store = this.storeRepo.create(input)
     await this.storeRepo.save(store)
     seller.store = store
     await this.sellerRepo.save(seller)
     return {
-      status: 'success',
+      success: true,
       message: 'Store created successfully',
       data: store,
     }
@@ -355,20 +350,18 @@ export class SellerService {
       where: { user: { id: reqUser.id } },
       relations: ['store'],
     })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
     if (!seller.store) {
       throw new NotFoundException(
         'Store not found. Please create your store first.',
       )
     }
-
     return {
       success: true,
       data: seller.store,
+      message: 'Store fetched successfully',
     }
   }
 
@@ -377,23 +370,18 @@ export class SellerService {
       where: { user: { id: reqUser.id } },
       relations: ['store'],
     })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
     if (!seller.store) {
       throw new NotFoundException(
         'Store not found. Please create your store first.',
       )
     }
-
     await this.storeRepo.update(seller.store.id, input)
-
     const updatedStore = await this.storeRepo.findOne({
       where: { id: seller.store.id },
     })
-
     return {
       success: true,
       message: 'Store updated successfully',
@@ -402,20 +390,21 @@ export class SellerService {
   }
 
   async getStoreByseller(sellerId: number) {
+    console.log(sellerId)
+
     const seller = await this.sellerRepo.findOne({
       where: { id: sellerId, isVerified: true, isBanned: false },
       relations: ['store'],
     })
-
+    
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
     if (!seller.store) {
       throw new NotFoundException('Store not found')
     }
-
     return {
+      message: 'Store fetched successfully',
       success: true,
       data: seller.store,
     }
