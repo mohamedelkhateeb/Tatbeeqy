@@ -25,11 +25,13 @@ export class AuthGuard implements CanActivate {
     const bearerToken = authHeader?.startsWith('Bearer ')
       ? authHeader.split(' ')[1]
       : null
-    const token = cookieToken || bearerToken
+    const token = bearerToken || cookieToken
     if (!token) {
       throw new HttpException('Unauthorized Request', HttpStatus.UNAUTHORIZED)
     }
+    console.log(token)
     const user = await this.validateToken(token)
+
     // 5️⃣ Attach user to request so RolesGuard sees it
     req.user = user
     return true

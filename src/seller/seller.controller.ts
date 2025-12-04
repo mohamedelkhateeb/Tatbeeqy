@@ -101,7 +101,7 @@ export class SellerController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Ban/unban seller' })
   ban(@Param('id', ParseIntPipe) id: number, @Body() banDto: BanSellerDto) {
-    return this.sellerService.ban(id, banDto.isBanned)
+    return this.sellerService.adminBan(id, banDto.isBanned)
   }
 
   @Patch('admin/verify/:id')
@@ -110,7 +110,7 @@ export class SellerController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Verify seller' })
   verify(@Param('id', ParseIntPipe) id: number) {
-    return this.sellerService.verify(id)
+    return this.sellerService.verifySellerByAdmin(id)
   }
 
   @Post('bank')
@@ -134,7 +134,7 @@ export class SellerController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create store information' })
   createStore(@Body() createStoreDto: CreateStoreDto, @Req() req) {
-    return this.sellerService.createStore(createStoreDto, req)
+    return this.sellerService.createStore(createStoreDto, req.user)
   }
 
   @Get('store/me')

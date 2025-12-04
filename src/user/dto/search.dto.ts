@@ -1,22 +1,22 @@
-import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator'
+import { Type } from 'class-transformer'
 
 export class SearchInput {
   @IsOptional()
   @IsString()
-  search?: string;
+  search?: string
 
   @IsOptional()
   @IsEnum(['ASC', 'DESC'])
-  orderBy?: 'ASC' | 'DESC';
+  orderBy?: 'ASC' | 'DESC'
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  limit?: number;
+  limit?: number
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  page?: number;
+  page?: number
 }

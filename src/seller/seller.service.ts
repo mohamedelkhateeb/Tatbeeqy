@@ -67,7 +67,8 @@ export class SellerService {
           ).replace('{name}', existingUser.name),
         })
         return {
-          success: false,
+          status: 'success',
+          data: null,
           message:
             'Your account is not verified yet. A new verification code was sent to your email.',
         }
@@ -113,14 +114,18 @@ export class SellerService {
       where: { email },
       select: ['id', 'email', 'otp', 'isVerified'],
     })
+    const seller = await this.sellerRepo.findOne({
+      where: { user: { email } },
+    })
     if (!user) throw new NotFoundException('User not found')
     if (user.otp !== code) {
       throw new BadRequestException('Invalid or expired OTP')
     }
     user.isVerified = true
     user.otp = null
+    seller.isVerified = true
+    await this.sellerRepo.save(seller)
     await this.userRepo.save(user)
-
     const token = this.jwtService.sign({
       phone: user.phone,
       id: user.id,
@@ -131,17 +136,15 @@ export class SellerService {
       user: { id: user.id },
     })
     await this.sessionRepository.save(session)
-
-    req.res.cookie('auth_token', token, {
+    req.res.cookie('token', token, {
       maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
       httpOnly: true,
       secure: true,
       sameSite: 'none',
       path: '/',
     })
-
     return {
-      success: true,
+      status: 'success',
       message: 'Email verified successfully',
       data: { userId: user.id, token },
     }
@@ -158,14 +161,14 @@ export class SellerService {
         search: `%${search}%`,
       })
     }
-
     const [sellers, total] = await queryBuilder
       .take(limit)
       .skip((page - 1) * limit)
       .orderBy('seller.createdAt', 'DESC')
       .getManyAndCount()
-
     return {
+      status: 'success',
+      message: 'Sellers fetched successfully',
       data: sellers,
       meta: {
         total,
@@ -207,44 +210,49 @@ export class SellerService {
       },
     }
   }
+  async getByIdAdmin(id: number) {
+    const seller = await this.sellerRepo.findOne({
+      where: { id },
+      relations: ['bank', 'user', 'store'],
+    })
+    if (!seller) {
+      throw new NotFoundException('Seller not found')
+    }
+    return {
+      data: seller,
+      message: 'Seller fetched successfully',
+      status: 'success',
+    }
+  }
 
   async getById(id: number) {
     const seller = await this.sellerRepo.findOne({
       where: { id, isVerified: true, isBanned: false },
       relations: ['store'],
     })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
-    return seller
-  }
-
-  async getByIdAdmin(id: number) {
-    const seller = await this.sellerRepo.findOne({
-      where: { id },
-      relations: ['bank', 'user', 'store'],
-    })
-
-    if (!seller) {
-      throw new NotFoundException('Seller not found')
+    return {
+      data: seller,
+      message: 'Seller fetched successfully',
+      status: 'success',
     }
-
-    return seller
   }
 
   async getProfile(reqUser: ReqUser) {
     const seller = await this.sellerRepo.findOne({
       where: { user: { id: reqUser.id } },
-      relations: ['bank', 'user', 'store'],
+      relations: ['user'],
     })
-
     if (!seller) {
       throw new NotFoundException('Seller profile not found')
     }
-
-    return seller
+    return {
+      data: seller,
+      message: 'Seller fetched successfully',
+      status: 'success',
+    }
   }
 
   async verifyPhone(input: SellerVerifyInput) {
@@ -263,33 +271,24 @@ export class SellerService {
     }
   }
 
-  // Removed - sellers don't have direct updatable fields anymore
-  // Use updateStore() and addOrUpdateBank() instead
-
-  async ban(id: number, isBanned: boolean) {
+  async adminBan(id: number, isBanned: boolean) {
     const seller = await this.sellerRepo.findOne({ where: { id } })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
     await this.sellerRepo.update(id, { isBanned })
-
     return {
       success: true,
       message: `Seller has been ${isBanned ? 'banned' : 'unbanned'}`,
     }
   }
 
-  async verify(id: number) {
+  async verifySellerByAdmin(id: number) {
     const seller = await this.sellerRepo.findOne({ where: { id } })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
     await this.sellerRepo.update(id, { isVerified: true })
-
     return {
       success: true,
       message: 'Seller verified successfully',
@@ -301,11 +300,9 @@ export class SellerService {
       where: { user: { id: reqUser.id } },
       relations: ['bank'],
     })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
-
     if (seller.bank) {
       await this.bankRepo.update(seller.bank.id, input)
     } else {
@@ -314,10 +311,10 @@ export class SellerService {
       seller.bank = newBank
       await this.sellerRepo.save(seller)
     }
-
     return {
-      success: true,
+      status: 'success',
       message: 'Bank information updated successfully',
+      data: seller.bank,
     }
   }
 
@@ -327,30 +324,27 @@ export class SellerService {
 
   async createStore(input: CreateStoreDto, reqUser: ReqUser) {
     console.log(reqUser)
-
     const seller = await this.sellerRepo.findOne({
       where: { user: { id: reqUser.id } },
       relations: ['store'],
     })
-
     if (!seller) {
       throw new NotFoundException('Seller not found')
     }
 
+    console.log(seller);
+    
     if (seller.store) {
       throw new BadRequestException(
         'Store already exists. Use update endpoint instead.',
       )
     }
-
     const store = this.storeRepo.create(input)
     await this.storeRepo.save(store)
-
     seller.store = store
     await this.sellerRepo.save(seller)
-
     return {
-      success: true,
+      status: 'success',
       message: 'Store created successfully',
       data: store,
     }
